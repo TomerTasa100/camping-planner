@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תכנון קמפינג</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pine: #1E3A2F;
+    --amber: #E8963A;
+    --bg: #EEF0E6;
+    --ink: #22271F;
+    --muted: #8A907C;
+    --line: #E2E4D8;
+    --line-dash: #C9CDB9;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Assistant', 'Heebo', sans-serif;
+  }
+  input, button, textarea { font-family: inherit; }
+  input { border: none; background: transparent; font-size: 14px; color: var(--ink); }
+  input:focus { outline: none; }
+  input::placeholder { color: #A3A894; }
+  button { cursor: pointer; border: none; background: none; }
+
+  .wrap { max-width: 480px; margin: 0 auto; padding-bottom: 48px; }
+
+  /* ---- שלט ---- */
+  .sign {
+    background: var(--pine);
+    color: #fff;
+    padding: 20px 16px 16px;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 4px 14px rgba(30,58,47,.25);
+  }
+  .sign-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .sign-title { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .sign-title svg { flex-shrink: 0; color: var(--amber); }
+  .sign-title input {
+    font-family: 'Secular One', 'Assistant', sans-serif;
+    font-size: 24px; color: #fff; width: 100%;
+  }
+  .sign-title input::placeholder { color: rgba(209,229,208,.5); }
+  .sync { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #B9C7B0; padding-top: 8px; flex-shrink: 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #6B7160; }
+  .dot.on { background: #7BD88F; }
+  .dot.err { background: #F87171; }
+  .sign-meta { display: flex; gap: 16px; margin-top: 8px; font-size: 14px; color: #B9C7B0; }
+  .sign-meta > div { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+  .sign-meta svg { flex-shrink: 0; }
+  .sign-meta input { color: #D7E0CF; width: 100%; }
+  .sign-meta input::placeholder { color: rgba(185,199,176,.6); }
+
+  /* ---- טאבים ---- */
+  .tabs {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 12px 16px 8px; scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 600;
+    background: #fff; color: #57604F; border: 1px solid #DDE0D2;
+    transition: transform .1s;
+  }
+  .tab:active { transform: scale(.97); }
+  .tab.active { background: var(--pine); color: #fff; border-color: var(--pine); box-shadow: 0 2px 8px rgba(30,58,47,.3); }
+  .tab .badge {
+    font-size: 11px; padding: 2px 6px; border-radius: 6px;
+    background: var(--bg); color: var(--muted);
+  }
+  .tab.active .badge { background: rgba(232,150,58,.25); color: #F5C284; }
+
+  /* ---- רשימה ---- */
+  .list { padding: 4px 16px 0; display: flex; flex-direction: column; gap: 8px; }
+  .row {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px;
+  }
+  .row.done { opacity: .55; }
+  .row input.f0 { font-weight: 600; }
+  .row.done input.f0 { text-decoration: line-through; }
+  .row input.grow { flex: 1; min-width: 0; padding: 2px 0; }
+  .row input.small { width: 44px; text-align: center; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+  .chk {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--line-dash); color: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .12s;
+  }
+  .chk.on { background: var(--pine); border-color: var(--pine); color: #fff; }
+  .del { color: #D6D8CC; padding: 4px; flex-shrink: 0; display: flex; }
+  .del:hover { color: #EF4444; }
+
+  .add {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: 2px dashed var(--line-dash); border-radius: 12px;
+    padding: 11px; font-size: 14px; font-weight: 600; color: #6B7160; width: 100%;
+  }
+  .add:active { transform: scale(.99); }
+
+  .empty {
+    text-align: center; font-size: 14px; color: var(--muted);
+    background: rgba(255,255,255,.6); border: 1px dashed var(--line-dash);
+    border-radius: 16px; padding: 20px; line-height: 1.6;
+  }
+  .fill-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+    background: var(--amber); color: #fff; font-weight: 600; font-size: 14px;
+    padding: 8px 16px; border-radius: 12px;
+  }
+  .foot { text-align: center; font-size: 12px; color: var(--muted); margin-top: 20px; line-height: 1.7; padding: 0 16px; }
+
+  /* ---- מסך הגדרה ---- */
+  .setup {
+    margin: 24px 16px; background: #fff; border: 1px solid var(--line);
+    border-radius: 16px; padding: 20px; line-height: 1.8; font-size: 14px;
+  }
+  .setup h2 { font-family: 'Secular One', sans-serif; color: var(--pine); margin-bottom: 8px; }
+  .setup code { background: var(--bg); padding: 1px 6px; border-radius: 6px; direction: ltr; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ============================================================
+   1) צור פרויקט ב-https://console.firebase.google.com
+   2) Build → Realtime Database → Create (start in test mode)
+   3) Project settings → הוסף Web App → העתק את firebaseConfig
+   4) הדבק אותו כאן במקום הבלוק הבא:
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBDeB6dm6bvR55-uYFQanbvPR1vH8WihCI",
+  authDomain: "camping-planner-d02900.firebaseapp.com",
+  databaseURL: "https://camping-planner-d02900-default-rtdb.firebaseio.com",
+  projectId: "camping-planner-d02900",
+  storageBucket: "camping-planner-d02900.firebasestorage.app",
+  messagingSenderId: "707093572359",
+  appId: "1:707093572359:web:9900d48efd5d1f065ff3a2",
+};
+
+/* ---------- הגדרות אפליקציה ---------- */
+const SECTIONS = [
+  { key: "people", label: "משתתפים", icon: "users",
+    fields: [{ k: "name", ph: "שם" }, { k: "role", ph: "אחראי על..." }],
+    empty: "עוד אין משתתפים — הוסיפו את מי שמגיע ומה כל אחד לוקח על עצמו." },
+  { key: "gear", label: "ציוד מהעסק", icon: "tent", check: true,
+    fields: [{ k: "item", ph: "פריט להשכרה" }, { k: "qty", ph: "כמות", small: true }, { k: "owner", ph: "אחראי" }],
+    empty: "רשמו מה משכירים מהעסק, כמה יחידות, ומי סוגר את זה. סימון ✓ = הוזמן." },
+  { key: "meals", label: "ארוחות", icon: "utensils",
+    fields: [{ k: "title", ph: "ארוחה (שישי ערב...)" }, { k: "desc", ph: "מה אוכלים" }, { k: "owner", ph: "אחראי" }],
+    empty: "תכננו ארוחה לכל מועד — מה אוכלים ומי אחראי להכין." },
+  { key: "shopping", label: "קניות", icon: "cart", check: true,
+    fields: [{ k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות", small: true }, { k: "owner", ph: "מי מביא" }],
+    empty: "רשימת הקניות המשותפת. סימון ✓ = כבר נקנה." },
+  { key: "personal", label: "ציוד אישי", icon: "backpack",
+    fields: [{ k: "item", ph: "פריט" }],
+    empty: "רשימת תזכורת לכולם — מה כל אחד מביא לעצמו." },
+];
+
+const BASIC_PERSONAL = ["שק שינה","מזרן שטח","פנס ראש","בקבוק מים","כובע","קרם הגנה","בגדים חמים לערב","בגד ים","נעליים סגורות","מטען נייד / סוללה","תרופות אישיות","מגבת"];
+
+const ICONS = {
+  tent: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 21 14 3l10.5 18H3.5Z" transform="translate(-2 0) scale(.95)"/><path d="M12 13l4 8H8l4-8Z" fill="currentColor" stroke="none" opacity=".35"/></svg>',
+  users: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  utensils: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+  cart: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>',
+  backpack: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/></svg>',
+  pin: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  cal: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+};
+const icon = (n, s = 16) => ICONS[n].replaceAll("ICON", s);
+
+/* ---------- מצב ---------- */
+let db = null;
+let state = { meta: {}, items: {} };
+let tab = "people";
+let connected = "off"; // off | on | err
+const timers = {};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const app = document.getElementById("app");
+
+const configMissing = firebaseConfig.apiKey.includes("PASTE");
+
+/* ---------- Firebase ---------- */
+if (!configMissing) {
+  try {
+    const fbApp = initializeApp(firebaseConfig);
+    db = getDatabase(fbApp);
+    onValue(ref(db, "trip"), (snap) => {
+      state = snap.val() || { meta: {}, items: {} };
+      state.meta = state.meta || {};
+      state.items = state.items || {};
+      connected = "on";
+      render();
+    }, () => { connected = "err"; render(); });
+  } catch (e) {
+    connected = "err";
+  }
+}
+
+const write = (path, value) => { if (db) set(ref(db, "trip/" + path), value); };
+const debounced = (key, fn) => { clearTimeout(timers[key]); timers[key] = setTimeout(fn, 500); };
+
+/* ---------- פעולות ---------- */
+window.actions = {
+  setTab(k) { tab = k; render(); },
+  meta(field, el) { debounced("meta:" + field, () => write("meta/" + field, el.value)); },
+  field(id, field, el) { debounced(id + field, () => write(`items/${tab}/${id}/${field}`, el.value)); },
+  toggle(id) {
+    const cur = state.items?.[tab]?.[id]?.done;
+    write(`items/${tab}/${id}/done`, !cur);
+  },
+  del(id) { if (db) remove(ref(db, `trip/items/${tab}/${id}`)); },
+  add() {
+    const sec = SECTIONS.find((s) => s.key === tab);
+    const it = { ts: Date.now() };
+    sec.fields.forEach((f) => (it[f.k] = ""));
+    if (sec.check) it.done = false;
+    write(`items/${tab}/${uid()}`, it);
+  },
+  fillBasics() {
+    const batch = {};
+    BASIC_PERSONAL.forEach((t, i) => (batch[uid() + i] = { item: t, ts: Date.now() + i }));
+    if (db) update(ref(db, "trip/items/personal"), batch);
+  },
+};
+
+/* ---------- רינדור ---------- */
+const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+
+function render() {
+  // שימור פוקוס: זוכרים איזה שדה בעריכה ומה הערך המקומי שלו
+  const ae = document.activeElement;
+  const focus = ae && ae.dataset && ae.dataset.fid
+    ? { fid: ae.dataset.fid, val: ae.value, sel: ae.selectionStart }
+    : null;
+
+  if (configMissing) {
+    app.innerHTML = `
+      <div class="setup">
+        <h2>⛺ עוד צעד אחד</h2>
+        חסר חיבור למסד הנתונים. פתחו את <code>index.html</code>,
+        עקבו אחרי ההוראות בתחילת הסקריפט והדביקו את ה-<code>firebaseConfig</code> שלכם.
+      </div>`;
+    return;
+  }
+
+  const sec = SECTIONS.find((s) => s.key === tab);
+  const itemsObj = state.items?.[tab] || {};
+  const items = Object.entries(itemsObj)
+    .map(([id, v]) => ({ id, ...v }))
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0));
+
+  const tabsHtml = SECTIONS.map((s) => {
+    const obj = state.items?.[s.key] || {};
+    const arr = Object.values(obj);
+    const badge = s.check ? `${arr.filter((i) => i.done).length}/${arr.length}` : `${arr.length}`;
+    return `
+      <button class="tab ${tab === s.key ? "active" : ""}" onclick="actions.setTab('${s.key}')">
+        <span style="color:${tab === s.key ? "var(--amber)" : "var(--muted)"};display:flex">${icon(s.icon, 15)}</span>
+        ${s.label}
+        ${arr.length ? `<span class="badge">${badge}</span>` : ""}
+      </button>`;
+  }).join("");
+
+  const rowsHtml = items.map((it) => `
+    <div class="row ${it.done ? "done" : ""}">
+      ${sec.check ? `<button class="chk ${it.done ? "on" : ""}" onclick="actions.toggle('${it.id}')">${ICONS.check}</button>` : ""}
+      ${sec.fields.map((f, i) => `
+        <input
+          class="${f.small ? "small" : "grow"} ${i === 0 ? "f0" : ""}"
+          value="${esc(it[f.k])}" placeholder="${f.ph}"
+          data-fid="${it.id}:${f.k}"
+          oninput="actions.field('${it.id}','${f.k}',this)" />`).join("")}
+      <button class="del" onclick="actions.del('${it.id}')">${ICONS.trash}</button>
+    </div>`).join("");
+
+  const emptyHtml = items.length ? "" : `
+    <div class="empty">
+      ${sec.empty}
+      ${tab === "personal" ? `<br><button class="fill-btn" onclick="actions.fillBasics()">✦ מלא רשימה בסיסית</button>` : ""}
+    </div>`;
+
+  app.innerHTML = `
+    <div class="sign">
+      <div class="sign-top">
+        <div class="sign-title">
+          ${icon("tent", 26)}
+          <input value="${esc(state.meta.name)}" placeholder="שם הטיול"
+            data-fid="meta:name" oninput="actions.meta('name',this)" />
+        </div>
+        <div class="sync">
+          <span class="dot ${connected === "on" ? "on" : connected === "err" ? "err" : ""}"></span>
+          ${connected === "on" ? "מסונכרן" : connected === "err" ? "אין חיבור" : "מתחבר..."}
+        </div>
+      </div>
+      <div class="sign-meta">
+        <div>${ICONS.pin}<input value="${esc(state.meta.place)}" placeholder="איפה?"
+          data-fid="meta:place" oninput="actions.meta('place',this)" /></div>
+        <div>${ICONS.cal}<input value="${esc(state.meta.dates)}" placeholder="מתי?"
+          data-fid="meta:dates" oninput="actions.meta('dates',this)" /></div>
+      </div>
+    </div>
+
+    <div class="tabs">${tabsHtml}</div>
+
+    <div class="list">
+      ${emptyHtml}
+      ${rowsHtml}
+      <button class="add" onclick="actions.add()">${ICONS.plus} הוסף ${tab === "people" ? "משתתף" : "פריט"}</button>
+      <p class="foot">משותף בזמן אמת — כל מי שיש לו את הקישור רואה ועורך את אותן רשימות.</p>
+    </div>`;
+
+  // החזרת פוקוס והערך המקומי (כדי שסנכרון לא ידרוס באמצע הקלדה)
+  if (focus) {
+    const el = document.querySelector(`[data-fid="${focus.fid}"]`);
+    if (el) {
+      el.value = focus.val;
+      el.focus();
+      try { el.setSelectionRange(focus.sel, focus.sel); } catch {}
+    }
+  }
+}
+
+render();
+</script>
+</body>
+</html>
