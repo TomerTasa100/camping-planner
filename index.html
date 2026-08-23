@@ -22,7 +22,7 @@
     color: var(--ink);
     font-family: 'Assistant', 'Heebo', sans-serif;
   }
-  input, button, textarea { font-family: inherit; }
+  input, button, textarea, select { font-family: inherit; }
   input { border: none; background: transparent; font-size: 14px; color: var(--ink); }
   input:focus { outline: none; }
   input::placeholder { color: #A3A894; }
@@ -55,6 +55,10 @@
   .sign-meta svg { flex-shrink: 0; }
   .sign-meta input { color: #D7E0CF; width: 100%; }
   .sign-meta input::placeholder { color: rgba(185,199,176,.6); }
+  .who { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px; color: #B9C7B0; }
+  .who b { color: #fff; }
+  .who-switch { background: rgba(255,255,255,.15); color: #fff; font-size: 12px; padding: 3px 10px; border-radius: 8px; font-weight: 600; }
+  .who-switch:active { transform: scale(.97); }
 
   /* ---- טאבים ---- */
   .tabs {
@@ -78,16 +82,21 @@
 
   /* ---- רשימה ---- */
   .list { padding: 4px 16px 0; display: flex; flex-direction: column; gap: 8px; }
-  .row {
-    display: flex; align-items: center; gap: 8px;
-    background: #fff; border: 1px solid var(--line);
-    border-radius: 12px; padding: 10px;
-  }
-  .row.done { opacity: .55; }
-  .row input.f0 { font-weight: 600; }
-  .row.done input.f0 { text-decoration: line-through; }
-  .row input.grow { flex: 1; min-width: 0; padding: 2px 0; }
-  .row input.small { width: 44px; text-align: center; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+
+  /* ---- כרטיס ---- */
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .card.done { opacity: .6; }
+  .card.add-open { border: 2px dashed var(--line-dash); }
+  .card-head { display: flex; align-items: center; gap: 10px; padding: 10px; }
+  .card-main { flex: 1; min-width: 0; cursor: pointer; }
+  .card-title { font-weight: 600; font-size: 15px; }
+  .card.done .card-title { text-decoration: line-through; }
+  .card-sub { font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-by { font-size: 11px; color: #A3A894; margin-top: 3px; }
+  .chev { color: var(--muted); display: flex; transition: transform .15s; cursor: pointer; flex-shrink: 0; }
+  .chev.open { transform: rotate(180deg); }
+  .card-body { padding: 10px 12px 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+
   .chk {
     width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
     border: 2px solid var(--line-dash); color: transparent;
@@ -98,12 +107,27 @@
   .del { color: #D6D8CC; padding: 4px; flex-shrink: 0; display: flex; }
   .del:hover { color: #EF4444; }
 
+  /* ---- טפסים ---- */
+  .flabel { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 6px; }
+  .finput { border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; font-size: 14px; width: 100%; background: #fff; }
+  .finput:focus { outline: none; border-color: var(--pine); }
+  .fnum { width: 100px; }
+  .ftext { min-height: 58px; resize: vertical; font-family: inherit; line-height: 1.5; }
+  .fsel { border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; font-size: 14px; width: 100%; background: #fff; color: var(--ink); }
+  .fsel:focus { outline: none; border-color: var(--pine); }
+  .form-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-save { flex: 1; background: var(--pine); color: #fff; font-weight: 600; padding: 10px; border-radius: 10px; font-size: 14px; }
+  .btn-cancel { flex: 1; background: var(--bg); color: #57604F; font-weight: 600; padding: 10px; border-radius: 10px; font-size: 14px; }
+  .btn-del { background: #fff; border: 1px solid #F0D0D0; color: #EF4444; font-weight: 600; padding: 10px 14px; border-radius: 10px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .btn-save:active, .btn-cancel:active, .btn-del:active { transform: scale(.98); }
+
   .add {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     border: 2px dashed var(--line-dash); border-radius: 12px;
     padding: 11px; font-size: 14px; font-weight: 600; color: #6B7160; width: 100%;
   }
   .add:active { transform: scale(.99); }
+  .add.sub { padding: 9px; font-size: 13px; }
 
   .empty {
     text-align: center; font-size: 14px; color: var(--muted);
@@ -116,6 +140,47 @@
     padding: 8px 16px; border-radius: 12px;
   }
   .foot { text-align: center; font-size: 12px; color: var(--muted); margin-top: 20px; line-height: 1.7; padding: 0 16px; }
+  .sub-head { font-weight: 700; color: var(--pine); font-size: 16px; margin: 16px 2px 2px; display: flex; align-items: center; gap: 6px; }
+
+  /* ---- הצעות מחיר ---- */
+  .qbadges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .qbadge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 8px; background: var(--bg); color: var(--muted); }
+  .qbadge.cheap { background: rgba(232,150,58,.18); color: #B06A18; }
+  .qbadge.done { background: rgba(30,58,47,.12); color: var(--pine); }
+  .quote { position: relative; background: var(--bg); border-radius: 10px; padding: 10px 34px 10px 10px; margin-top: 6px; }
+  .quote-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .quote-top b { font-size: 14px; }
+  .price { color: var(--pine); font-weight: 700; white-space: nowrap; }
+  .quote-line { font-size: 13px; color: #57604F; margin-top: 3px; }
+  .quote .del { position: absolute; top: 8px; left: 8px; padding: 2px; }
+  .q-toggle { background: var(--bg); color: var(--pine); font-weight: 600; padding: 9px; border-radius: 10px; font-size: 13px; width: 100%; margin-top: 8px; }
+  .q-toggle.on { background: rgba(30,58,47,.9); color: #fff; }
+
+  /* ---- AI ---- */
+  .btn-ai { margin-top: 8px; background: rgba(232,150,58,.16); color: #B06A18; font-weight: 600; padding: 10px; border-radius: 10px; font-size: 14px; width: 100%; }
+  .btn-ai:active { transform: scale(.99); }
+  .ai-panel { margin-top: 8px; background: var(--bg); border-radius: 10px; padding: 12px; }
+  .ai-title { font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--pine); }
+  .ai-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 14px; cursor: pointer; }
+  .ai-item input { width: 18px; height: 18px; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--line-dash); border-top-color: var(--pine); border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- מסך "מי אני" ---- */
+  #overlay {
+    position: fixed; inset: 0; background: rgba(30,58,47,.97);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 24px;
+  }
+  .ov-box { width: 100%; max-width: 360px; text-align: center; color: #fff; }
+  .ov-box h2 { font-family: 'Secular One', sans-serif; font-size: 28px; margin-bottom: 4px; }
+  .ov-box p { color: #B9C7B0; margin-bottom: 22px; }
+  .ov-names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ov-name { background: #fff; color: var(--pine); font-weight: 700; font-size: 16px; padding: 15px; border-radius: 14px; }
+  .ov-name:active { transform: scale(.97); }
+  .ov-other { background: var(--amber); color: #fff; grid-column: span 2; }
+  .ov-input-row { margin-top: 14px; display: flex; gap: 8px; }
+  .ov-input-row input { flex: 1; background: #fff; border-radius: 12px; padding: 12px; font-size: 15px; }
+  .ov-input-row button { background: var(--amber); color: #fff; font-weight: 700; padding: 0 18px; border-radius: 12px; }
 
   /* ---- מסך הגדרה ---- */
   .setup {
@@ -128,10 +193,16 @@
 </head>
 <body>
 <div class="wrap" id="app"></div>
+<div id="overlay"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+/* Firebase CDN bumped to v12 (needed for firebase-ai.js). Keep the AI version const below in sync with these import URLs. */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+/* ---------- קבועים לכוונון קל (CDN + מודל AI) ---------- */
+const AI_CDN_VERSION = "12.1.0";      // חייב להתאים לגרסה ב-import למעלה
+const AI_MODEL_NAME  = "gemini-2.5-flash";
 
 /* ============================================================
    1) צור פרויקט ב-https://console.firebase.google.com
@@ -149,26 +220,74 @@ const firebaseConfig = {
   appId: "1:707093572359:web:9900d48efd5d1f065ff3a2",
 };
 
+/* ---------- זהויות ---------- */
+const NAMES = ["תומר", "טל", "הראל", "גיא", "ראם", "אורי", "מעיין"];
+
 /* ---------- הגדרות אפליקציה ---------- */
 const SECTIONS = [
-  { key: "people", label: "משתתפים", icon: "users",
-    fields: [{ k: "name", ph: "שם" }, { k: "role", ph: "אחראי על..." }],
+  { key: "people",   label: "משתתפים",   icon: "users",
     empty: "עוד אין משתתפים — הוסיפו את מי שמגיע ומה כל אחד לוקח על עצמו." },
-  { key: "gear", label: "ציוד מהעסק", icon: "tent", check: true,
-    fields: [{ k: "item", ph: "פריט להשכרה" }, { k: "qty", ph: "כמות", small: true }, { k: "owner", ph: "אחראי" }],
-    empty: "רשמו מה משכירים מהעסק, כמה יחידות, ומי סוגר את זה. סימון ✓ = הוזמן." },
-  { key: "meals", label: "ארוחות", icon: "utensils",
-    fields: [{ k: "title", ph: "ארוחה (שישי ערב...)" }, { k: "desc", ph: "מה אוכלים" }, { k: "owner", ph: "אחראי" }],
+  { key: "quotes",   label: "הצעות מחיר", icon: "tag",
+    empty: "" },
+  { key: "meals",    label: "ארוחות",    icon: "utensils",
     empty: "תכננו ארוחה לכל מועד — מה אוכלים ומי אחראי להכין." },
-  { key: "shopping", label: "קניות", icon: "cart", check: true,
-    fields: [{ k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות", small: true }, { k: "owner", ph: "מי מביא" }],
+  { key: "shopping", label: "קניות",     icon: "cart",
     empty: "רשימת הקניות המשותפת. סימון ✓ = כבר נקנה." },
   { key: "personal", label: "ציוד אישי", icon: "backpack",
-    fields: [{ k: "item", ph: "פריט" }],
     empty: "רשימת תזכורת לכולם — מה כל אחד מביא לעצמו." },
 ];
 
+/* שדות לכל סוג טופס (הוספה/עריכה). type: text(ברירת מחדל)|num|textarea|owner */
+const SECTION_FIELDS = {
+  people:    [ { k: "name", ph: "שם" }, { k: "role", ph: "אחראי על..." } ],
+  meals:     [ { k: "title", ph: "שם הארוחה (שישי ערב...)" }, { k: "desc", ph: "מה אוכלים", type: "textarea" }, { k: "owner", ph: "אחראי", type: "owner" } ],
+  shopping:  [ { k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות", type: "num" }, { k: "owner", ph: "מי מביא", type: "owner" } ],
+  personal:  [ { k: "item", ph: "פריט" } ],
+  guests:    [ { k: "name", ph: "שם האורח" }, { k: "arrival", ph: "מתי מגיע (יום/שעה)" } ],
+  quoteitem: [ { k: "name", ph: "שם הפריט" } ],
+};
+const QUOTE_FIELDS = [
+  { k: "business", ph: "שם העסק" },
+  { k: "phone", ph: "טלפון" },
+  { k: "price", ph: "מחיר (₪)", type: "num" },
+  { k: "receivedBy", ph: "מי קיבל את ההצעה", type: "owner" },
+  { k: "notes", ph: "הערות", type: "textarea" },
+];
+
+const CHECK_SECTIONS = ["shopping"];
+const ADD_WORD = { people: "משתתף", meals: "ארוחה", shopping: "פריט", personal: "פריט", guests: "אורח", quoteitem: "פריט" };
+
+/* פריטי הצעות-מחיר קבועים (seed) עם מזהים יציבים */
+const QUOTE_SEED = [
+  { id: "tzilia",         name: "צילייה גדולה" },
+  { id: "fridge",         name: "מקרר" },
+  { id: "generator",      name: "גנרטור" },
+  { id: "mats",           name: "מחצלות" },
+  { id: "gas-stove",      name: "כירת גז 2 ראשים" },
+  { id: "lounge-chairs",  name: "כיסאות רביצה" },
+  { id: "dining-chairs",  name: "כיסאות אוכל" },
+  { id: "mattresses",     name: "מזרונים" },
+  { id: "tables",         name: "שולחנות" },
+  { id: "fans",           name: "מאווררים" },
+  { id: "lights",         name: "גרילנדות" },
+];
+
 const BASIC_PERSONAL = ["שק שינה","מזרן שטח","פנס ראש","בקבוק מים","כובע","קרם הגנה","בגדים חמים לערב","בגד ים","נעליים סגורות","מטען נייד / סוללה","תרופות אישיות","מגבת"];
+
+/* ---------- מילון גיבוי למצרכים (fallback ל-AI) ---------- */
+const MEAL_FALLBACK = [
+  { kw: ["על האש","מנגל","גריל","בשר","אש"], items: ["פחמים","נקניקיות","המבורגר","כנפיים","פרגיות","לחמניות","חסה","עגבניה","בצל","קטשופ","חרדל","נייר אלומיניום","נוזל הצתה"] },
+  { kw: ["פויקה"], items: ["בשר לבישול ארוך","תפוחי אדמה","גזר","בצל","שום","יין אדום","רסק עגבניות","שמן זית","פטריות","תבלינים"] },
+  { kw: ["שקשוקה"], items: ["ביצים","עגבניות","רסק עגבניות","פלפל","בצל","שום","פפריקה","כמון","לחם","שמן זית"] },
+  { kw: ["סלט"], items: ["עגבניה","מלפפון","בצל","פלפל","לימון","שמן זית","מלח","פטרוזיליה"] },
+  { kw: ["פיתה","פיתות","חומוס"], items: ["פיתות","חומוס","טחינה","חמוצים","ירקות","שמן זית"] },
+  { kw: ["טוסט"], items: ["לחם פרוס","גבינה צהובה","חמאה","עגבניה","זעתר"] },
+  { kw: ["פסטה"], items: ["פסטה","רסק עגבניות","שמנת","פרמזן","שום","שמן זית","בזיליקום"] },
+  { kw: ["נקניק"], items: ["נקניקיות","לחמניות","קטשופ","חרדל","בצל מטוגן"] },
+  { kw: ["המבורגר"], items: ["קציצות המבורגר","לחמניות","גבינה צהובה","חסה","עגבניה","בצל","רטבים"] },
+  { kw: ["קפה","מרשמלו","בוקר","ארוחת בוקר"], items: ["קפה","סוכר","חלב","מרשמלו","ביסקוויטים","שוקולד"] },
+];
+const GENERIC_INGREDIENTS = ["מים","לחם","ביצים","גבינה","ירקות","חטיפים","שתייה קלה","שמן","מלח","כלים חד פעמיים","שקיות אשפה"];
 
 const ICONS = {
   tent: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 21 14 3l10.5 18H3.5Z" transform="translate(-2 0) scale(.95)"/><path d="M12 13l4 8H8l4-8Z" fill="currentColor" stroke="none" opacity=".35"/></svg>',
@@ -176,34 +295,50 @@ const ICONS = {
   utensils: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
   cart: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>',
   backpack: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/></svg>',
+  tag: '<svg width="ICON" height="ICON" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/></svg>',
   pin: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
   cal: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
   check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
   plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
 };
 const icon = (n, s = 16) => ICONS[n].replaceAll("ICON", s);
 
 /* ---------- מצב ---------- */
+let fbApp = null;
 let db = null;
-let state = { meta: {}, items: {} };
+let state = { meta: {}, items: {}, guests: {}, quotes: {} };
 let tab = "people";
 let connected = "off"; // off | on | err
 const timers = {};
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const app = document.getElementById("app");
+const overlay = document.getElementById("overlay");
+
+/* מצב-UI (לא נשמר ב-DB) */
+let currentUser = localStorage.getItem("campUser") || "";
+let showOverlay = !currentUser;
+let overlayOther = false;
+const openCards = new Set();        // "section:id" — כרטיסי עריכה פתוחים
+const addOpen = new Set();          // הקשרים של טופס-הוספה פתוח: "add:people", "quote:<id>"...
+const openQuoteItems = new Set();   // מזהי פריטי הצעות-מחיר פתוחים
+const drafts = {};                  // ctx -> { field: value, _other_<field>: bool }
+const aiState = {};                 // mealId -> { loading, suggestions:[{text,checked}] }
 
 const configMissing = firebaseConfig.apiKey.includes("PASTE");
 
 /* ---------- Firebase ---------- */
 if (!configMissing) {
   try {
-    const fbApp = initializeApp(firebaseConfig);
+    fbApp = initializeApp(firebaseConfig);
     db = getDatabase(fbApp);
     onValue(ref(db, "trip"), (snap) => {
-      state = snap.val() || { meta: {}, items: {} };
+      state = snap.val() || {};
       state.meta = state.meta || {};
       state.items = state.items || {};
+      state.guests = state.guests || {};
+      state.quotes = state.quotes || {};
       connected = "on";
       render();
     }, () => { connected = "err"; render(); });
@@ -212,42 +347,431 @@ if (!configMissing) {
   }
 }
 
-const write = (path, value) => { if (db) set(ref(db, "trip/" + path), value); };
+const wr = (p, v) => { if (db) set(ref(db, "trip/" + p), v); };
+const up = (p, v) => { if (db) update(ref(db, "trip/" + p), v); };
+const rm = (p) => { if (db) remove(ref(db, "trip/" + p)); };
 const debounced = (key, fn) => { clearTimeout(timers[key]); timers[key] = setTimeout(fn, 500); };
+
+/* ---------- עזרי נתונים ---------- */
+const getItem = (section, id) => section === "guests" ? (state.guests?.[id]) : (state.items?.[section]?.[id]);
+const basePath = (section, id) => section === "guests" ? ("guests/" + id) : ("items/" + section + "/" + id);
+const entriesSorted = (obj) => Object.entries(obj || {}).map(([id, v]) => ({ id, ...v })).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+
+function quoteItems() {
+  const dbq = state.quotes || {};
+  const seedList = QUOTE_SEED.map((s) => {
+    const n = dbq[s.id] || {};
+    return { id: s.id, name: n.name || s.name, seed: true, done: !!n.done, quotes: n.quotes || {} };
+  });
+  const custom = Object.entries(dbq)
+    .filter(([id]) => !QUOTE_SEED.some((s) => s.id === id))
+    .map(([id, v]) => ({ id, name: v.name || "פריט", seed: false, done: !!v.done, quotes: v.quotes || {}, ts: v.ts || 0 }))
+    .sort((a, b) => a.ts - b.ts);
+  return [...seedList, ...custom];
+}
+
+function initDraft(section) {
+  const d = {};
+  (SECTION_FIELDS[section] || []).forEach((f) => { d[f.k] = f.type === "owner" ? currentUser : ""; });
+  return d;
+}
+function initDraftFromItem(section, item) {
+  const d = {};
+  (SECTION_FIELDS[section] || []).forEach((f) => { d[f.k] = item?.[f.k] ?? ""; });
+  return d;
+}
+
+/* ---------- AI: הצעת מצרכים ---------- */
+function withTimeout(promise, ms) {
+  return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+}
+function parseIngredients(text) {
+  return String(text || "")
+    .split("\n")
+    .map((l) => l.replace(/^[\s\-*••\d.)]+/, "").trim())
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 25);
+}
+function fallbackIngredients(title, desc) {
+  const hay = ((title || "") + " " + (desc || ""));
+  for (const m of MEAL_FALLBACK) { if (m.kw.some((k) => hay.includes(k))) return m.items.slice(); }
+  return GENERIC_INGREDIENTS.slice();
+}
+async function suggestIngredients(title, desc) {
+  try {
+    if (!fbApp) throw new Error("no firebase app");
+    const { getAI, getGenerativeModel, GoogleAIBackend } = await import(`https://www.gstatic.com/firebasejs/${AI_CDN_VERSION}/firebase-ai.js`);
+    const ai = getAI(fbApp, { backend: new GoogleAIBackend() });
+    const model = getGenerativeModel(ai, { model: AI_MODEL_NAME });
+    const prompt = `אני מכין/ה את הארוחה "${title || "ארוחת קמפינג"}" לטיול קמפינג.` +
+      (desc ? ` תיאור: ${desc}.` : "") +
+      ` כתוב/י רשימת מצרכים לקנייה עבור הארוחה. כל מצרך בשורה נפרדת, בעברית, בלי מספור, בלי כותרות ובלי סימני מקף — רק שמות המצרכים.`;
+    const res = await withTimeout(model.generateContent(prompt), 15000);
+    const text = res.response.text();
+    const lines = parseIngredients(text);
+    if (lines.length) return lines;
+    throw new Error("empty result");
+  } catch (e) {
+    return fallbackIngredients(title, desc);
+  }
+}
 
 /* ---------- פעולות ---------- */
 window.actions = {
   setTab(k) { tab = k; render(); },
-  meta(field, el) { debounced("meta:" + field, () => write("meta/" + field, el.value)); },
-  field(id, field, el) { debounced(id + field, () => write(`items/${tab}/${id}/${field}`, el.value)); },
-  toggle(id) {
-    const cur = state.items?.[tab]?.[id]?.done;
-    write(`items/${tab}/${id}/done`, !cur);
+  meta(field, el) { debounced("meta:" + field, () => wr("meta/" + field, el.value)); },
+
+  /* זהות */
+  chooseIdentity(name) {
+    currentUser = name;
+    localStorage.setItem("campUser", name);
+    showOverlay = false; overlayOther = false;
+    renderOverlay(); render();
   },
-  del(id) { if (db) remove(ref(db, `trip/items/${tab}/${id}`)); },
-  add() {
-    const sec = SECTIONS.find((s) => s.key === tab);
-    const it = { ts: Date.now() };
-    sec.fields.forEach((f) => (it[f.k] = ""));
-    if (sec.check) it.done = false;
-    write(`items/${tab}/${uid()}`, it);
+  openIdentity() { showOverlay = true; overlayOther = false; renderOverlay(); },
+  showOther() { overlayOther = true; renderOverlay(); const el = document.getElementById("ovOtherInput"); if (el) el.focus(); },
+  confirmOther() {
+    const el = document.getElementById("ovOtherInput");
+    const v = (el?.value || "").trim();
+    if (v) this.chooseIdentity(v);
   },
+
+  /* כרטיסים כלליים */
+  toggleCard(section, id) {
+    const key = section + ":" + id;
+    if (openCards.has(key)) { openCards.delete(key); delete drafts["edit:" + key]; }
+    else { openCards.add(key); drafts["edit:" + key] = initDraftFromItem(section, getItem(section, id) || {}); }
+    render();
+  },
+  toggleDone(section, id) {
+    const cur = getItem(section, id)?.done;
+    wr(basePath(section, id) + "/done", !cur);
+  },
+  del(section, id) {
+    rm(basePath(section, id));
+    openCards.delete(section + ":" + id);
+    delete drafts["edit:" + section + ":" + id];
+    render();
+  },
+
+  /* טפסי הוספה/עריכה */
+  openAdd(ctx, section) { addOpen.add(ctx); drafts[ctx] = initDraft(section); render(); },
+  cancelAdd(ctx) { addOpen.delete(ctx); delete drafts[ctx]; render(); },
+  draftInput(ctx, key, el) { (drafts[ctx] || (drafts[ctx] = {}))[key] = el.value; },
+  ownerSel(ctx, key, el) {
+    const d = drafts[ctx] || (drafts[ctx] = {});
+    if (el.value === "__other__") { d["_other_" + key] = true; d[key] = ""; }
+    else { d["_other_" + key] = false; d[key] = el.value; }
+    render();
+  },
+  saveAdd(ctx, section) {
+    const d = drafts[ctx] || {};
+    if (section === "quoteitem") {
+      if (!(d.name || "").trim()) return;
+      wr("quotes/" + uid(), { name: d.name.trim(), ts: Date.now(), createdBy: currentUser });
+      this.cancelAdd(ctx); return;
+    }
+    const fields = SECTION_FIELDS[section];
+    const first = fields[0].k;
+    if (!(d[first] || "").trim()) return;
+    const item = { ts: Date.now(), createdBy: currentUser };
+    fields.forEach((f) => { item[f.k] = d[f.k] || ""; });
+    if (CHECK_SECTIONS.includes(section)) item.done = false;
+    const path = section === "guests" ? ("guests/" + uid()) : ("items/" + section + "/" + uid());
+    wr(path, item);
+    this.cancelAdd(ctx);
+  },
+  saveEdit(section, id) {
+    const ctx = "edit:" + section + ":" + id;
+    const d = drafts[ctx] || {};
+    const upd = {};
+    SECTION_FIELDS[section].forEach((f) => { upd[f.k] = d[f.k] || ""; });
+    up(basePath(section, id), upd);
+    openCards.delete(section + ":" + id);
+    delete drafts[ctx];
+    render();
+  },
+
+  /* הצעות מחיר */
+  toggleQuoteItem(id) { if (openQuoteItems.has(id)) openQuoteItems.delete(id); else openQuoteItems.add(id); render(); },
+  toggleQuoteDone(id, name) {
+    const cur = state.quotes?.[id]?.done;
+    up("quotes/" + id, { name, done: !cur });
+  },
+  delQuoteItem(id) { rm("quotes/" + id); openQuoteItems.delete(id); render(); },
+  openQuoteAdd(id) {
+    const ctx = "quote:" + id;
+    addOpen.add(ctx);
+    const d = {};
+    QUOTE_FIELDS.forEach((f) => { d[f.k] = f.type === "owner" ? currentUser : ""; });
+    drafts[ctx] = d;
+    render();
+  },
+  saveQuote(id, name) {
+    const ctx = "quote:" + id;
+    const d = drafts[ctx] || {};
+    if (!(d.business || "").trim()) return;
+    up("quotes/" + id, { name });
+    const q = {
+      business: d.business || "", phone: d.phone || "", price: d.price || "",
+      receivedBy: d.receivedBy || "", notes: d.notes || "",
+      createdBy: currentUser, ts: Date.now(),
+    };
+    wr("quotes/" + id + "/quotes/" + uid(), q);
+    addOpen.delete(ctx); delete drafts[ctx]; render();
+  },
+  delQuote(itemId, qid) { rm("quotes/" + itemId + "/quotes/" + qid); render(); },
+
+  /* ציוד אישי */
   fillBasics() {
     const batch = {};
-    BASIC_PERSONAL.forEach((t, i) => (batch[uid() + i] = { item: t, ts: Date.now() + i }));
-    if (db) update(ref(db, "trip/items/personal"), batch);
+    BASIC_PERSONAL.forEach((t, i) => (batch[uid() + i] = { item: t, ts: Date.now() + i, createdBy: currentUser }));
+    up("items/personal", batch);
+  },
+
+  /* AI */
+  async aiSuggest(mealId) {
+    aiState[mealId] = { loading: true, suggestions: [] };
+    render();
+    const meal = state.items?.meals?.[mealId] || {};
+    const list = await suggestIngredients(meal.title || "", meal.desc || "");
+    aiState[mealId] = { loading: false, suggestions: list.map((t) => ({ text: t, checked: true })) };
+    render();
+  },
+  aiToggle(mealId, idx) {
+    const st = aiState[mealId];
+    if (st && st.suggestions[idx]) { st.suggestions[idx].checked = !st.suggestions[idx].checked; render(); }
+  },
+  aiCancel(mealId) { delete aiState[mealId]; render(); },
+  aiAdd(mealId) {
+    const st = aiState[mealId];
+    if (!st) return;
+    const meal = state.items?.meals?.[mealId] || {};
+    const batch = {};
+    st.suggestions.filter((s) => s.checked).forEach((s, i) => {
+      batch[uid() + i] = { item: s.text, qty: "", owner: meal.owner || "", createdBy: currentUser, done: false, ts: Date.now() + i };
+    });
+    up("items/shopping", batch);
+    delete aiState[mealId];
+    render();
   },
 };
 
 /* ---------- רינדור ---------- */
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
+function ownerField(ctx, key, value) {
+  const otherFlag = drafts[ctx]?.["_other_" + key];
+  const isOther = otherFlag || (value && !NAMES.includes(value));
+  const opts = NAMES.map((n) => `<option value="${esc(n)}" ${value === n && !isOther ? "selected" : ""}>${esc(n)}</option>`).join("");
+  return `<select class="fsel" onchange="actions.ownerSel('${ctx}','${key}',this)">
+      <option value="">— בחר —</option>
+      ${opts}
+      <option value="__other__" ${isOther ? "selected" : ""}>אחר...</option>
+    </select>
+    ${isOther ? `<input class="finput" placeholder="שם" value="${esc(value)}" data-fid="${ctx}:${key}" oninput="actions.draftInput('${ctx}','${key}',this)">` : ""}`;
+}
+
+function formFieldsHtml(ctx, fields) {
+  const d = drafts[ctx] || {};
+  return fields.map((f) => {
+    const v = d[f.k] ?? "";
+    let control;
+    if (f.type === "owner") control = ownerField(ctx, f.k, v);
+    else if (f.type === "textarea") control = `<textarea class="finput ftext" placeholder="${esc(f.ph)}" data-fid="${ctx}:${f.k}" oninput="actions.draftInput('${ctx}','${f.k}',this)">${esc(v)}</textarea>`;
+    else control = `<input class="finput ${f.type === "num" ? "fnum" : ""}" placeholder="${esc(f.ph)}" value="${esc(v)}" data-fid="${ctx}:${f.k}" oninput="actions.draftInput('${ctx}','${f.k}',this)">`;
+    return `<div class="flabel">${esc(f.ph)}</div>${control}`;
+  }).join("");
+}
+
+function summary(section, it) {
+  if (section === "people")   return { title: it.name || "(ללא שם)", meta: it.role || "" };
+  if (section === "meals")    return { title: it.title || "(ללא שם)", meta: it.desc || "" };
+  if (section === "shopping") return { title: it.item || "(פריט)", meta: [it.qty ? "כמות: " + it.qty : "", it.owner ? "· " + it.owner : ""].filter(Boolean).join(" ") };
+  if (section === "personal") return { title: it.item || "(פריט)", meta: "" };
+  if (section === "guests")   return { title: it.name || "(אורח)", meta: it.arrival || "" };
+  return { title: "", meta: "" };
+}
+
+function cardHtml(section, it) {
+  const id = it.id;
+  const open = openCards.has(section + ":" + id);
+  const check = CHECK_SECTIONS.includes(section);
+  const s = summary(section, it);
+  const chk = check ? `<button class="chk ${it.done ? "on" : ""}" onclick="actions.toggleDone('${section}','${id}')">${ICONS.check}</button>` : "";
+  const editCtx = "edit:" + section + ":" + id;
+  const ai = section === "meals" ? aiSectionHtml(id) : "";
+  const body = open ? `
+    <div class="card-body">
+      ${formFieldsHtml(editCtx, SECTION_FIELDS[section])}
+      ${ai}
+      <div class="form-actions">
+        <button class="btn-del" onclick="actions.del('${section}','${id}')">${ICONS.trash} מחק</button>
+        <button class="btn-save" onclick="actions.saveEdit('${section}','${id}')">שמור</button>
+      </div>
+    </div>` : "";
+  return `
+    <div class="card ${check && it.done ? "done" : ""}">
+      <div class="card-head">
+        ${chk}
+        <div class="card-main" onclick="actions.toggleCard('${section}','${id}')">
+          <div class="card-title">${esc(s.title)}</div>
+          ${s.meta ? `<div class="card-sub">${esc(s.meta)}</div>` : ""}
+          ${it.createdBy ? `<div class="card-by">נוסף ע"י ${esc(it.createdBy)}</div>` : ""}
+        </div>
+        <span class="chev ${open ? "open" : ""}" onclick="actions.toggleCard('${section}','${id}')">${ICONS.chev}</span>
+      </div>
+      ${body}
+    </div>`;
+}
+
+function aiSectionHtml(mealId) {
+  const st = aiState[mealId];
+  if (!st) return `<button class="btn-ai" onclick="actions.aiSuggest('${mealId}')">✨ הצע רשימת מצרכים</button>`;
+  if (st.loading) return `<div class="ai-panel"><span class="spinner"></span> &nbsp; מכין רשימת מצרכים...</div>`;
+  return `<div class="ai-panel">
+      <div class="ai-title">מצרכים מוצעים:</div>
+      ${st.suggestions.map((s, i) => `<label class="ai-item"><input type="checkbox" ${s.checked ? "checked" : ""} onclick="actions.aiToggle('${mealId}',${i})"> ${esc(s.text)}</label>`).join("")}
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="actions.aiCancel('${mealId}')">ביטול</button>
+        <button class="btn-save" onclick="actions.aiAdd('${mealId}')">הוסף לרשימת הקניות</button>
+      </div>
+    </div>`;
+}
+
+function addCardHtml(ctx, section, word) {
+  if (addOpen.has(ctx)) {
+    const fields = section === "quoteitem" ? SECTION_FIELDS.quoteitem : SECTION_FIELDS[section];
+    return `<div class="card add-open">
+      <div class="card-body">
+        ${formFieldsHtml(ctx, fields)}
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="actions.cancelAdd('${ctx}')">ביטול</button>
+          <button class="btn-save" onclick="actions.saveAdd('${ctx}','${section}')">הוסף</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  return `<button class="add" onclick="actions.openAdd('${ctx}','${section}')">${ICONS.plus} הוסף ${word}</button>`;
+}
+
+function genericHtml(section) {
+  const sec = SECTIONS.find((s) => s.key === section);
+  const items = entriesSorted(state.items?.[section]);
+  const cards = items.map((it) => cardHtml(section, it)).join("");
+  const empty = items.length ? "" : `
+    <div class="empty">
+      ${sec.empty}
+      ${section === "personal" ? `<br><button class="fill-btn" onclick="actions.fillBasics()">✦ מלא רשימה בסיסית</button>` : ""}
+    </div>`;
+  return empty + cards + addCardHtml("add:" + section, section, ADD_WORD[section]);
+}
+
+function peopleHtml() {
+  const parts = entriesSorted(state.items?.people);
+  const partsCards = parts.map((it) => cardHtml("people", it)).join("");
+  const partsEmpty = parts.length ? "" : `<div class="empty">${SECTIONS[0].empty}</div>`;
+
+  const guests = entriesSorted(state.guests);
+  const guestCards = guests.map((it) => cardHtml("guests", it)).join("");
+  const guestEmpty = guests.length ? "" : `<div class="empty">עוד אין אורחים — הוסיפו מי שמצטרף לביקור וגם מתי הוא מגיע.</div>`;
+
+  return `
+    ${partsEmpty}${partsCards}
+    ${addCardHtml("add:people", "people", "משתתף")}
+    <div class="sub-head">${icon("users", 16)} אורחים</div>
+    ${guestEmpty}${guestCards}
+    ${addCardHtml("add:guests", "guests", "אורח")}`;
+}
+
+function quoteCardHtml(qi) {
+  const open = openQuoteItems.has(qi.id);
+  const qs = entriesSorted(qi.quotes);
+  const count = qs.length;
+  const prices = qs.map((q) => parseFloat(q.price)).filter((n) => !isNaN(n));
+  const cheapest = prices.length ? Math.min(...prices) : null;
+  const badges = `
+    <div class="qbadges">
+      <span class="qbadge">${count} הצעות</span>
+      ${cheapest != null ? `<span class="qbadge cheap">הכי זול: ₪${cheapest}</span>` : ""}
+      ${qi.done ? `<span class="qbadge done">✓ הוזמן</span>` : ""}
+    </div>`;
+  const quotesHtml = qs.map((q) => `
+    <div class="quote">
+      <button class="del" onclick="actions.delQuote('${qi.id}','${q.id}')">${ICONS.trash}</button>
+      <div class="quote-top"><b>${esc(q.business || "עסק")}</b>${q.price ? `<span class="price">₪${esc(q.price)}</span>` : ""}</div>
+      ${q.phone ? `<div class="quote-line">טלפון: ${esc(q.phone)}</div>` : ""}
+      ${q.receivedBy ? `<div class="quote-line">קיבל/ה את ההצעה: ${esc(q.receivedBy)}</div>` : ""}
+      ${q.notes ? `<div class="quote-line">${esc(q.notes)}</div>` : ""}
+      ${q.createdBy ? `<div class="card-by">נוסף ע"י ${esc(q.createdBy)}</div>` : ""}
+    </div>`).join("");
+  const addQuoteCtx = "quote:" + qi.id;
+  const addQuote = addOpen.has(addQuoteCtx) ? `
+    <div class="card add-open" style="margin-top:6px">
+      <div class="card-body">
+        ${formFieldsHtml(addQuoteCtx, QUOTE_FIELDS)}
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="actions.cancelAdd('${addQuoteCtx}')">ביטול</button>
+          <button class="btn-save" onclick="actions.saveQuote('${qi.id}','${esc(qi.name)}')">שמור הצעה</button>
+        </div>
+      </div>
+    </div>` : `<button class="add sub" style="margin-top:6px" onclick="actions.openQuoteAdd('${qi.id}')">${ICONS.plus} הוסף הצעת מחיר</button>`;
+  const body = open ? `
+    <div class="card-body">
+      ${count ? quotesHtml : `<div class="card-by" style="text-align:center;padding:6px">עוד לא נוספו הצעות מחיר לפריט הזה.</div>`}
+      ${addQuote}
+      <button class="q-toggle ${qi.done ? "on" : ""}" onclick="actions.toggleQuoteDone('${qi.id}','${esc(qi.name)}')">${qi.done ? "בטל סימון — עדיין לא הוזמן" : "✓ סמן כסגור / הוזמן"}</button>
+      ${!qi.seed ? `<button class="btn-del" style="margin-top:8px;width:100%;justify-content:center" onclick="actions.delQuoteItem('${qi.id}')">${ICONS.trash} מחק פריט</button>` : ""}
+    </div>` : "";
+  return `
+    <div class="card ${qi.done ? "done" : ""}">
+      <div class="card-head">
+        <div class="card-main" onclick="actions.toggleQuoteItem('${qi.id}')">
+          <div class="card-title">${esc(qi.name)}</div>
+          ${badges}
+        </div>
+        <span class="chev ${open ? "open" : ""}" onclick="actions.toggleQuoteItem('${qi.id}')">${ICONS.chev}</span>
+      </div>
+      ${body}
+    </div>`;
+}
+
+function quotesHtml() {
+  const items = quoteItems();
+  const cards = items.map((qi) => quoteCardHtml(qi)).join("");
+  return cards + addCardHtml("add:quoteitem", "quoteitem", "פריט");
+}
+
+function renderOverlay() {
+  if (!showOverlay) { overlay.style.display = "none"; overlay.innerHTML = ""; return; }
+  overlay.style.display = "flex";
+  const namesHtml = NAMES.map((n) => `<button class="ov-name" onclick="actions.chooseIdentity('${esc(n)}')">${esc(n)}</button>`).join("");
+  overlay.innerHTML = `
+    <div class="ov-box">
+      <h2>⛺ מי אתה?</h2>
+      <p>בחרו את השם שלכם — כל מה שתוסיפו יתויג על שמכם.</p>
+      <div class="ov-names">
+        ${namesHtml}
+        <button class="ov-name ov-other" onclick="actions.showOther()">אחר...</button>
+      </div>
+      ${overlayOther ? `
+        <div class="ov-input-row">
+          <input id="ovOtherInput" placeholder="הקלד שם" onkeydown="if(event.key==='Enter')actions.confirmOther()">
+          <button onclick="actions.confirmOther()">אישור</button>
+        </div>` : ""}
+    </div>`;
+  if (overlayOther) { const el = document.getElementById("ovOtherInput"); if (el) el.focus(); }
+}
+
 function render() {
-  // שימור פוקוס: זוכרים איזה שדה בעריכה ומה הערך המקומי שלו
+  // שימור פוקוס
   const ae = document.activeElement;
   const focus = ae && ae.dataset && ae.dataset.fid
     ? { fid: ae.dataset.fid, val: ae.value, sel: ae.selectionStart }
     : null;
+
+  renderOverlay();
 
   if (configMissing) {
     app.innerHTML = `
@@ -259,41 +783,30 @@ function render() {
     return;
   }
 
-  const sec = SECTIONS.find((s) => s.key === tab);
-  const itemsObj = state.items?.[tab] || {};
-  const items = Object.entries(itemsObj)
-    .map(([id, v]) => ({ id, ...v }))
-    .sort((a, b) => (a.ts || 0) - (b.ts || 0));
-
   const tabsHtml = SECTIONS.map((s) => {
-    const obj = state.items?.[s.key] || {};
-    const arr = Object.values(obj);
-    const badge = s.check ? `${arr.filter((i) => i.done).length}/${arr.length}` : `${arr.length}`;
+    let badge = "";
+    if (s.key === "quotes") {
+      const qi = quoteItems();
+      badge = `${qi.filter((q) => q.done).length}/${qi.length}`;
+    } else if (CHECK_SECTIONS.includes(s.key)) {
+      const arr = Object.values(state.items?.[s.key] || {});
+      if (arr.length) badge = `${arr.filter((i) => i.done).length}/${arr.length}`;
+    } else {
+      const n = Object.keys(state.items?.[s.key] || {}).length;
+      if (n) badge = String(n);
+    }
     return `
       <button class="tab ${tab === s.key ? "active" : ""}" onclick="actions.setTab('${s.key}')">
         <span style="color:${tab === s.key ? "var(--amber)" : "var(--muted)"};display:flex">${icon(s.icon, 15)}</span>
         ${s.label}
-        ${arr.length ? `<span class="badge">${badge}</span>` : ""}
+        ${badge ? `<span class="badge">${badge}</span>` : ""}
       </button>`;
   }).join("");
 
-  const rowsHtml = items.map((it) => `
-    <div class="row ${it.done ? "done" : ""}">
-      ${sec.check ? `<button class="chk ${it.done ? "on" : ""}" onclick="actions.toggle('${it.id}')">${ICONS.check}</button>` : ""}
-      ${sec.fields.map((f, i) => `
-        <input
-          class="${f.small ? "small" : "grow"} ${i === 0 ? "f0" : ""}"
-          value="${esc(it[f.k])}" placeholder="${f.ph}"
-          data-fid="${it.id}:${f.k}"
-          oninput="actions.field('${it.id}','${f.k}',this)" />`).join("")}
-      <button class="del" onclick="actions.del('${it.id}')">${ICONS.trash}</button>
-    </div>`).join("");
-
-  const emptyHtml = items.length ? "" : `
-    <div class="empty">
-      ${sec.empty}
-      ${tab === "personal" ? `<br><button class="fill-btn" onclick="actions.fillBasics()">✦ מלא רשימה בסיסית</button>` : ""}
-    </div>`;
+  let bodyHtml;
+  if (tab === "quotes") bodyHtml = quotesHtml();
+  else if (tab === "people") bodyHtml = peopleHtml();
+  else bodyHtml = genericHtml(tab);
 
   app.innerHTML = `
     <div class="sign">
@@ -314,14 +827,15 @@ function render() {
         <div>${ICONS.cal}<input value="${esc(state.meta.dates)}" placeholder="מתי?"
           data-fid="meta:dates" oninput="actions.meta('dates',this)" /></div>
       </div>
+      <div class="who">מחובר כ: <b>${esc(currentUser || "—")}</b>
+        <button class="who-switch" onclick="actions.openIdentity()">החלף</button>
+      </div>
     </div>
 
     <div class="tabs">${tabsHtml}</div>
 
     <div class="list">
-      ${emptyHtml}
-      ${rowsHtml}
-      <button class="add" onclick="actions.add()">${ICONS.plus} הוסף ${tab === "people" ? "משתתף" : "פריט"}</button>
+      ${bodyHtml}
       <p class="foot">משותף בזמן אמת — כל מי שיש לו את הקישור רואה ועורך את אותן רשימות.</p>
     </div>`;
 
