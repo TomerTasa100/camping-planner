@@ -145,16 +145,7 @@
   /* ---- הצעות מחיר ---- */
   .qbadges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
   .qbadge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 8px; background: var(--bg); color: var(--muted); }
-  .qbadge.cheap { background: rgba(232,150,58,.18); color: #B06A18; }
-  .qbadge.done { background: rgba(30,58,47,.12); color: var(--pine); }
-  .quote { position: relative; background: var(--bg); border-radius: 10px; padding: 10px 34px 10px 10px; margin-top: 6px; }
-  .quote-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .quote-top b { font-size: 14px; }
   .price { color: var(--pine); font-weight: 700; white-space: nowrap; }
-  .quote-line { font-size: 13px; color: #57604F; margin-top: 3px; }
-  .quote .del { position: absolute; top: 8px; left: 8px; padding: 2px; }
-  .q-toggle { background: var(--bg); color: var(--pine); font-weight: 600; padding: 9px; border-radius: 10px; font-size: 13px; width: 100%; margin-top: 8px; }
-  .q-toggle.on { background: rgba(30,58,47,.9); color: #fff; }
 
   /* ---- AI ---- */
   .btn-ai { margin-top: 8px; background: rgba(232,150,58,.16); color: #B06A18; font-weight: 600; padding: 10px; border-radius: 10px; font-size: 14px; width: 100%; }
@@ -199,10 +190,12 @@
 /* Firebase CDN bumped to v12 (needed for firebase-ai.js). Keep the AI version const below in sync with these import URLs. */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app-check.js";
 
 /* ---------- קבועים לכוונון קל (CDN + מודל AI) ---------- */
 const AI_CDN_VERSION = "12.1.0";      // חייב להתאים לגרסה ב-import למעלה
 const AI_MODEL_NAME  = "gemini-2.5-flash";
+const RECAPTCHA_SITE_KEY = "6LfHtpQtAAAAAGpmYWgMkp1kXT9P3SwonwGnKHLm";
 
 /* ============================================================
    1) צור פרויקט ב-https://console.firebase.google.com
@@ -228,7 +221,7 @@ const SECTIONS = [
   { key: "people",   label: "משתתפים",   icon: "users",
     empty: "עוד אין משתתפים — הוסיפו את מי שמגיע ומה כל אחד לוקח על עצמו." },
   { key: "quotes",   label: "הצעות מחיר", icon: "tag",
-    empty: "" },
+    empty: "עוד אין הצעות מחיר — הוסיפו הצעה לכל חבילת הציוד." },
   { key: "meals",    label: "ארוחות",    icon: "utensils",
     empty: "תכננו ארוחה לכל מועד — מה אוכלים ומי אחראי להכין." },
   { key: "shopping", label: "קניות",     icon: "cart",
@@ -238,38 +231,38 @@ const SECTIONS = [
 ];
 
 /* שדות לכל סוג טופס (הוספה/עריכה). type: text(ברירת מחדל)|num|textarea|owner */
+const QUOTE_MAIN_FIELDS = [
+  { k: "business", ph: "שם העסק" },
+  { k: "phone", ph: "טלפון" },
+  { k: "price", ph: "מחיר (₪)", type: "num" },
+  { k: "receivedBy", ph: "מי קיבל את ההצעה", type: "owner" },
+];
+const QUOTE_NOTES_FIELD = { k: "notes", ph: "מה עוד כולל / הערות", type: "textarea" };
 const SECTION_FIELDS = {
   people:    [ { k: "name", ph: "שם" }, { k: "role", ph: "אחראי על..." } ],
   meals:     [ { k: "title", ph: "שם הארוחה (שישי ערב...)" }, { k: "desc", ph: "מה אוכלים", type: "textarea" }, { k: "owner", ph: "אחראי", type: "owner" } ],
   shopping:  [ { k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות", type: "num" }, { k: "owner", ph: "מי מביא", type: "owner" } ],
   personal:  [ { k: "item", ph: "פריט" } ],
   guests:    [ { k: "name", ph: "שם האורח" }, { k: "arrival", ph: "מתי מגיע (יום/שעה)" } ],
-  quoteitem: [ { k: "name", ph: "שם הפריט" } ],
+  quotes:    QUOTE_MAIN_FIELDS,
 };
-const QUOTE_FIELDS = [
-  { k: "business", ph: "שם העסק" },
-  { k: "phone", ph: "טלפון" },
-  { k: "price", ph: "מחיר (₪)", type: "num" },
-  { k: "receivedBy", ph: "מי קיבל את ההצעה", type: "owner" },
-  { k: "notes", ph: "הערות", type: "textarea" },
-];
 
 const CHECK_SECTIONS = ["shopping"];
-const ADD_WORD = { people: "משתתף", meals: "ארוחה", shopping: "פריט", personal: "פריט", guests: "אורח", quoteitem: "פריט" };
+const ADD_WORD = { people: "משתתף", meals: "ארוחה", shopping: "פריט", personal: "פריט", guests: "אורח", quotes: "הצעת מחיר" };
 
-/* פריטי הצעות-מחיר קבועים (seed) עם מזהים יציבים */
-const QUOTE_SEED = [
-  { id: "tzilia",         name: "צילייה גדולה" },
-  { id: "fridge",         name: "מקרר" },
-  { id: "generator",      name: "גנרטור" },
-  { id: "mats",           name: "מחצלות" },
-  { id: "gas-stove",      name: "כירת גז 2 ראשים" },
-  { id: "lounge-chairs",  name: "כיסאות רביצה" },
-  { id: "dining-chairs",  name: "כיסאות אוכל" },
-  { id: "mattresses",     name: "מזרונים" },
-  { id: "tables",         name: "שולחנות" },
-  { id: "fans",           name: "מאווררים" },
-  { id: "lights",         name: "גרילנדות" },
+/* פריטי הציוד הסטנדרטיים — משמשים לצ'קליסט "מה כלול בהצעה" */
+const GEAR_ITEMS = [
+  { slug: "tzilia",         label: "צילייה גדולה" },
+  { slug: "fridge",         label: "מקרר" },
+  { slug: "generator",      label: "גנרטור" },
+  { slug: "mats",           label: "מחצלות" },
+  { slug: "gas-stove",      label: "כירת גז 2 ראשים" },
+  { slug: "lounge-chairs",  label: "כיסאות רביצה" },
+  { slug: "dining-chairs",  label: "כיסאות אוכל" },
+  { slug: "mattresses",     label: "מזרונים" },
+  { slug: "tables",         label: "שולחנות" },
+  { slug: "fans",           label: "מאווררים" },
+  { slug: "lights",         label: "גרילנדות" },
 ];
 
 const BASIC_PERSONAL = ["שק שינה","מזרן שטח","פנס ראש","בקבוק מים","כובע","קרם הגנה","בגדים חמים לערב","בגד ים","נעליים סגורות","מטען נייד / סוללה","תרופות אישיות","מגבת"];
@@ -308,6 +301,7 @@ const icon = (n, s = 16) => ICONS[n].replaceAll("ICON", s);
 /* ---------- מצב ---------- */
 let fbApp = null;
 let db = null;
+let appCheck = null;
 let state = { meta: {}, items: {}, guests: {}, quotes: {} };
 let tab = "people";
 let connected = "off"; // off | on | err
@@ -321,8 +315,7 @@ let currentUser = localStorage.getItem("campUser") || "";
 let showOverlay = !currentUser;
 let overlayOther = false;
 const openCards = new Set();        // "section:id" — כרטיסי עריכה פתוחים
-const addOpen = new Set();          // הקשרים של טופס-הוספה פתוח: "add:people", "quote:<id>"...
-const openQuoteItems = new Set();   // מזהי פריטי הצעות-מחיר פתוחים
+const addOpen = new Set();          // הקשרים של טופס-הוספה פתוח: "add:people", "add:quotes"...
 const drafts = {};                  // ctx -> { field: value, _other_<field>: bool }
 const aiState = {};                 // mealId -> { loading, suggestions:[{text,checked}] }
 
@@ -333,6 +326,9 @@ if (!configMissing) {
   try {
     fbApp = initializeApp(firebaseConfig);
     db = getDatabase(fbApp);
+    try {
+      appCheck = initializeAppCheck(fbApp, { provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY), isTokenAutoRefreshEnabled: true });
+    } catch (e) { console.warn("appcheck", e); }
     onValue(ref(db, "trip"), (snap) => {
       state = snap.val() || {};
       state.meta = state.meta || {};
@@ -356,19 +352,6 @@ const debounced = (key, fn) => { clearTimeout(timers[key]); timers[key] = setTim
 const getItem = (section, id) => section === "guests" ? (state.guests?.[id]) : (state.items?.[section]?.[id]);
 const basePath = (section, id) => section === "guests" ? ("guests/" + id) : ("items/" + section + "/" + id);
 const entriesSorted = (obj) => Object.entries(obj || {}).map(([id, v]) => ({ id, ...v })).sort((a, b) => (a.ts || 0) - (b.ts || 0));
-
-function quoteItems() {
-  const dbq = state.quotes || {};
-  const seedList = QUOTE_SEED.map((s) => {
-    const n = dbq[s.id] || {};
-    return { id: s.id, name: n.name || s.name, seed: true, done: !!n.done, quotes: n.quotes || {} };
-  });
-  const custom = Object.entries(dbq)
-    .filter(([id]) => !QUOTE_SEED.some((s) => s.id === id))
-    .map(([id, v]) => ({ id, name: v.name || "פריט", seed: false, done: !!v.done, quotes: v.quotes || {}, ts: v.ts || 0 }))
-    .sort((a, b) => a.ts - b.ts);
-  return [...seedList, ...custom];
-}
 
 function initDraft(section) {
   const d = {};
@@ -467,18 +450,15 @@ window.actions = {
   },
   saveAdd(ctx, section) {
     const d = drafts[ctx] || {};
-    if (section === "quoteitem") {
-      if (!(d.name || "").trim()) return;
-      wr("quotes/" + uid(), { name: d.name.trim(), ts: Date.now(), createdBy: currentUser });
-      this.cancelAdd(ctx); return;
-    }
     const fields = SECTION_FIELDS[section];
     const first = fields[0].k;
     if (!(d[first] || "").trim()) return;
     const item = { ts: Date.now(), createdBy: currentUser };
     fields.forEach((f) => { item[f.k] = d[f.k] || ""; });
     if (CHECK_SECTIONS.includes(section)) item.done = false;
-    const path = section === "guests" ? ("guests/" + uid()) : ("items/" + section + "/" + uid());
+    const path = section === "guests" ? ("guests/" + uid())
+      : section === "quotes" ? ("quotes/" + uid())
+      : ("items/" + section + "/" + uid());
     wr(path, item);
     this.cancelAdd(ctx);
   },
@@ -494,34 +474,41 @@ window.actions = {
   },
 
   /* הצעות מחיר */
-  toggleQuoteItem(id) { if (openQuoteItems.has(id)) openQuoteItems.delete(id); else openQuoteItems.add(id); render(); },
-  toggleQuoteDone(id, name) {
-    const cur = state.quotes?.[id]?.done;
-    up("quotes/" + id, { name, done: !cur });
-  },
-  delQuoteItem(id) { rm("quotes/" + id); openQuoteItems.delete(id); render(); },
-  openQuoteAdd(id) {
-    const ctx = "quote:" + id;
-    addOpen.add(ctx);
-    const d = {};
-    QUOTE_FIELDS.forEach((f) => { d[f.k] = f.type === "owner" ? currentUser : ""; });
-    drafts[ctx] = d;
+  toggleQuoteCard(id) {
+    const key = "quotes:" + id;
+    if (openCards.has(key)) { openCards.delete(key); delete drafts["edit:" + key]; }
+    else {
+      openCards.add(key);
+      const it = state.quotes?.[id] || {};
+      const d = {};
+      QUOTE_MAIN_FIELDS.forEach((f) => { d[f.k] = it[f.k] ?? ""; });
+      d.notes = it.notes ?? "";
+      drafts["edit:" + key] = d;
+    }
     render();
   },
-  saveQuote(id, name) {
-    const ctx = "quote:" + id;
+  saveQuoteEdit(id) {
+    const key = "quotes:" + id;
+    const ctx = "edit:" + key;
     const d = drafts[ctx] || {};
-    if (!(d.business || "").trim()) return;
-    up("quotes/" + id, { name });
-    const q = {
-      business: d.business || "", phone: d.phone || "", price: d.price || "",
-      receivedBy: d.receivedBy || "", notes: d.notes || "",
-      createdBy: currentUser, ts: Date.now(),
-    };
-    wr("quotes/" + id + "/quotes/" + uid(), q);
-    addOpen.delete(ctx); delete drafts[ctx]; render();
+    const upd = {};
+    QUOTE_MAIN_FIELDS.forEach((f) => { upd[f.k] = d[f.k] || ""; });
+    upd.notes = d.notes || "";
+    up("quotes/" + id, upd);
+    openCards.delete(key);
+    delete drafts[ctx];
+    render();
   },
-  delQuote(itemId, qid) { rm("quotes/" + itemId + "/quotes/" + qid); render(); },
+  delQuote(id) {
+    rm("quotes/" + id);
+    openCards.delete("quotes:" + id);
+    delete drafts["edit:quotes:" + id];
+    render();
+  },
+  toggleInclude(id, slug) {
+    const cur = !!state.quotes?.[id]?.includes?.[slug];
+    wr("quotes/" + id + "/includes/" + slug, !cur);
+  },
 
   /* ציוד אישי */
   fillBasics() {
@@ -642,7 +629,7 @@ function aiSectionHtml(mealId) {
 
 function addCardHtml(ctx, section, word) {
   if (addOpen.has(ctx)) {
-    const fields = section === "quoteitem" ? SECTION_FIELDS.quoteitem : SECTION_FIELDS[section];
+    const fields = SECTION_FIELDS[section];
     return `<div class="card add-open">
       <div class="card-body">
         ${formFieldsHtml(ctx, fields)}
@@ -685,62 +672,54 @@ function peopleHtml() {
     ${addCardHtml("add:guests", "guests", "אורח")}`;
 }
 
-function quoteCardHtml(qi) {
-  const open = openQuoteItems.has(qi.id);
-  const qs = entriesSorted(qi.quotes);
-  const count = qs.length;
-  const prices = qs.map((q) => parseFloat(q.price)).filter((n) => !isNaN(n));
-  const cheapest = prices.length ? Math.min(...prices) : null;
-  const badges = `
-    <div class="qbadges">
-      <span class="qbadge">${count} הצעות</span>
-      ${cheapest != null ? `<span class="qbadge cheap">הכי זול: ₪${cheapest}</span>` : ""}
-      ${qi.done ? `<span class="qbadge done">✓ הוזמן</span>` : ""}
-    </div>`;
-  const quotesHtml = qs.map((q) => `
-    <div class="quote">
-      <button class="del" onclick="actions.delQuote('${qi.id}','${q.id}')">${ICONS.trash}</button>
-      <div class="quote-top"><b>${esc(q.business || "עסק")}</b>${q.price ? `<span class="price">₪${esc(q.price)}</span>` : ""}</div>
-      ${q.phone ? `<div class="quote-line">טלפון: ${esc(q.phone)}</div>` : ""}
-      ${q.receivedBy ? `<div class="quote-line">קיבל/ה את ההצעה: ${esc(q.receivedBy)}</div>` : ""}
-      ${q.notes ? `<div class="quote-line">${esc(q.notes)}</div>` : ""}
-      ${q.createdBy ? `<div class="card-by">נוסף ע"י ${esc(q.createdBy)}</div>` : ""}
-    </div>`).join("");
-  const addQuoteCtx = "quote:" + qi.id;
-  const addQuote = addOpen.has(addQuoteCtx) ? `
-    <div class="card add-open" style="margin-top:6px">
-      <div class="card-body">
-        ${formFieldsHtml(addQuoteCtx, QUOTE_FIELDS)}
-        <div class="form-actions">
-          <button class="btn-cancel" onclick="actions.cancelAdd('${addQuoteCtx}')">ביטול</button>
-          <button class="btn-save" onclick="actions.saveQuote('${qi.id}','${esc(qi.name)}')">שמור הצעה</button>
-        </div>
-      </div>
-    </div>` : `<button class="add sub" style="margin-top:6px" onclick="actions.openQuoteAdd('${qi.id}')">${ICONS.plus} הוסף הצעת מחיר</button>`;
+function quoteCardHtml(q) {
+  const id = q.id;
+  const key = "quotes:" + id;
+  const ctx = "edit:" + key;
+  const open = openCards.has(key);
+  const inc = q.includes || {};
+  const incCount = Object.values(inc).filter(Boolean).length;
+  const subtitle = [
+    q.phone ? `<a href="tel:${esc(q.phone)}" onclick="event.stopPropagation()" style="color:inherit">${esc(q.phone)}</a>` : "",
+    q.receivedBy ? `קיבל/ה: ${esc(q.receivedBy)}` : "",
+  ].filter(Boolean).join(" · ");
   const body = open ? `
     <div class="card-body">
-      ${count ? quotesHtml : `<div class="card-by" style="text-align:center;padding:6px">עוד לא נוספו הצעות מחיר לפריט הזה.</div>`}
-      ${addQuote}
-      <button class="q-toggle ${qi.done ? "on" : ""}" onclick="actions.toggleQuoteDone('${qi.id}','${esc(qi.name)}')">${qi.done ? "בטל סימון — עדיין לא הוזמן" : "✓ סמן כסגור / הוזמן"}</button>
-      ${!qi.seed ? `<button class="btn-del" style="margin-top:8px;width:100%;justify-content:center" onclick="actions.delQuoteItem('${qi.id}')">${ICONS.trash} מחק פריט</button>` : ""}
+      <div class="ai-panel">
+        <div class="ai-title">מה כלול בהצעה:</div>
+        ${GEAR_ITEMS.map((g) => `<label class="ai-item"><input type="checkbox" ${inc[g.slug] ? "checked" : ""} onclick="actions.toggleInclude('${id}','${g.slug}')"> ${esc(g.label)}</label>`).join("")}
+      </div>
+      ${formFieldsHtml(ctx, [QUOTE_NOTES_FIELD])}
+      ${formFieldsHtml(ctx, QUOTE_MAIN_FIELDS)}
+      <div class="form-actions">
+        <button class="btn-del" onclick="actions.delQuote('${id}')">${ICONS.trash} מחק</button>
+        <button class="btn-save" onclick="actions.saveQuoteEdit('${id}')">שמור</button>
+      </div>
     </div>` : "";
   return `
-    <div class="card ${qi.done ? "done" : ""}">
+    <div class="card">
       <div class="card-head">
-        <div class="card-main" onclick="actions.toggleQuoteItem('${qi.id}')">
-          <div class="card-title">${esc(qi.name)}</div>
-          ${badges}
+        <div class="card-main" onclick="actions.toggleQuoteCard('${id}')">
+          <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <span>${esc(q.business || "(ללא שם עסק)")}</span>
+            ${q.price ? `<span class="price">₪${esc(q.price)}</span>` : ""}
+          </div>
+          ${subtitle ? `<div class="card-sub">${subtitle}</div>` : ""}
+          ${q.createdBy ? `<div class="card-by">נוסף ע"י ${esc(q.createdBy)}</div>` : ""}
+          ${incCount ? `<div class="qbadges"><span class="qbadge">כולל ${incCount} פריטים</span></div>` : ""}
         </div>
-        <span class="chev ${open ? "open" : ""}" onclick="actions.toggleQuoteItem('${qi.id}')">${ICONS.chev}</span>
+        <span class="chev ${open ? "open" : ""}" onclick="actions.toggleQuoteCard('${id}')">${ICONS.chev}</span>
       </div>
       ${body}
     </div>`;
 }
 
 function quotesHtml() {
-  const items = quoteItems();
-  const cards = items.map((qi) => quoteCardHtml(qi)).join("");
-  return cards + addCardHtml("add:quoteitem", "quoteitem", "פריט");
+  const sec = SECTIONS.find((s) => s.key === "quotes");
+  const items = entriesSorted(state.quotes);
+  const cards = items.map((q) => quoteCardHtml(q)).join("");
+  const empty = items.length ? "" : `<div class="empty">${sec.empty}</div>`;
+  return empty + cards + addCardHtml("add:quotes", "quotes", "הצעת מחיר");
 }
 
 function renderOverlay() {
@@ -786,8 +765,8 @@ function render() {
   const tabsHtml = SECTIONS.map((s) => {
     let badge = "";
     if (s.key === "quotes") {
-      const qi = quoteItems();
-      badge = `${qi.filter((q) => q.done).length}/${qi.length}`;
+      const n = Object.keys(state.quotes || {}).length;
+      if (n) badge = String(n);
     } else if (CHECK_SECTIONS.includes(s.key)) {
       const arr = Object.values(state.items?.[s.key] || {});
       if (arr.length) badge = `${arr.filter((i) => i.done).length}/${arr.length}`;
