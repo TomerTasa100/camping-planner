@@ -139,6 +139,13 @@
     background: var(--amber); color: #fff; font-weight: 600; font-size: 14px;
     padding: 8px 16px; border-radius: 12px;
   }
+  .claim {
+    flex-shrink: 0; font-size: 13px; font-weight: 700;
+    padding: 6px 12px; border-radius: 10px;
+    background: var(--bg); color: var(--pine); border: 1px solid var(--line);
+  }
+  .claim.on { background: var(--pine); color: #fff; border-color: var(--pine); }
+  .claim:active { transform: scale(.97); }
   .foot { text-align: center; font-size: 12px; color: var(--muted); margin-top: 20px; line-height: 1.7; padding: 0 16px; }
   .sub-head { font-weight: 700; color: var(--pine); font-size: 16px; margin: 16px 2px 2px; display: flex; align-items: center; gap: 6px; }
 
@@ -226,6 +233,8 @@ const SECTIONS = [
     empty: "תכננו ארוחה לכל מועד — מה אוכלים ומי אחראי להכין." },
   { key: "shopping", label: "קניות",     icon: "cart",
     empty: "רשימת הקניות המשותפת. סימון ✓ = כבר נקנה." },
+  { key: "gear",     label: "ציוד",      icon: "tent",
+    empty: "מי מביא מה." },
   { key: "personal", label: "ציוד אישי", icon: "backpack",
     empty: "רשימת תזכורת לכולם — מה כל אחד מביא לעצמו." },
 ];
@@ -242,13 +251,15 @@ const SECTION_FIELDS = {
   people:    [ { k: "name", ph: "שם" }, { k: "role", ph: "אחראי על..." } ],
   meals:     [ { k: "title", ph: "שם הארוחה (שישי ערב...)" }, { k: "desc", ph: "מה אוכלים", type: "textarea" }, { k: "owner", ph: "אחראי", type: "owner" } ],
   shopping:  [ { k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות", type: "num" }, { k: "owner", ph: "מי מביא", type: "owner" } ],
+  gear:      [ { k: "item", ph: "פריט" }, { k: "owner", ph: "מי מביא", type: "owner" } ],
   personal:  [ { k: "item", ph: "פריט" } ],
   guests:    [ { k: "name", ph: "שם האורח" }, { k: "arrival", ph: "מתי מגיע (יום/שעה)" } ],
   quotes:    QUOTE_MAIN_FIELDS,
 };
 
 const CHECK_SECTIONS = ["shopping"];
-const ADD_WORD = { people: "משתתף", meals: "ארוחה", shopping: "פריט", personal: "פריט", guests: "אורח", quotes: "הצעת מחיר" };
+const CLAIM_SECTIONS = ["gear"];
+const ADD_WORD = { people: "משתתף", meals: "ארוחה", shopping: "פריט", gear: "פריט", personal: "פריט", guests: "אורח", quotes: "הצעת מחיר" };
 
 /* פריטי הציוד הסטנדרטיים — משמשים לצ'קליסט "מה כלול בהצעה" */
 const GEAR_ITEMS = [
@@ -266,6 +277,7 @@ const GEAR_ITEMS = [
 ];
 
 const BASIC_PERSONAL = ["שק שינה","מזרן שטח","פנס ראש","בקבוק מים","כובע","קרם הגנה","בגדים חמים לערב","בגד ים","נעליים סגורות","מטען נייד / סוללה","תרופות אישיות","מגבת"];
+const BASIC_GEAR = ["ראש גזייה","בלון גז","סיר","מחבת","כלי אכילה משותפים","קרש חיתוך + סכין","צידנית","צלייה + חבלים","תאורת קמפינג / פנסים","ערכת עזרה ראשונה","שולחן קמפינג","דלי / ג׳ריקן לניקוי"];
 
 /* ---------- מילון גיבוי למצרכים (fallback ל-AI) ---------- */
 const MEAL_FALLBACK = [
@@ -517,6 +529,19 @@ window.actions = {
     up("items/personal", batch);
   },
 
+  /* ציוד משותף */
+  fillGear() {
+    const batch = {};
+    BASIC_GEAR.forEach((t, i) => (batch[uid() + i] = { item: t, owner: "", ts: Date.now() + i, createdBy: currentUser }));
+    up("items/gear", batch);
+  },
+  claim(section, id) {
+    if (!currentUser) return;
+    const cur = getItem(section, id)?.owner;
+    if (cur && cur !== currentUser) return;
+    wr(basePath(section, id) + "/owner", cur === currentUser ? "" : currentUser);
+  },
+
   /* AI */
   async aiSuggest(mealId) {
     aiState[mealId] = { loading: true, suggestions: [] };
@@ -576,6 +601,7 @@ function summary(section, it) {
   if (section === "people")   return { title: it.name || "(ללא שם)", meta: it.role || "" };
   if (section === "meals")    return { title: it.title || "(ללא שם)", meta: it.desc || "" };
   if (section === "shopping") return { title: it.item || "(פריט)", meta: [it.qty ? "כמות: " + it.qty : "", it.owner ? "· " + it.owner : ""].filter(Boolean).join(" ") };
+  if (section === "gear")     return { title: it.item || "(פריט)", meta: it.owner || "" };
   if (section === "personal") return { title: it.item || "(פריט)", meta: "" };
   if (section === "guests")   return { title: it.name || "(אורח)", meta: it.arrival || "" };
   return { title: "", meta: "" };
@@ -587,6 +613,10 @@ function cardHtml(section, it) {
   const check = CHECK_SECTIONS.includes(section);
   const s = summary(section, it);
   const chk = check ? `<button class="chk ${it.done ? "on" : ""}" onclick="actions.toggleDone('${section}','${id}')">${ICONS.check}</button>` : "";
+  const mine = it.owner === currentUser;
+  const claim = CLAIM_SECTIONS.includes(section) && currentUser && (!it.owner || mine)
+    ? `<button class="claim ${mine ? "on" : ""}" onclick="actions.claim('${section}','${id}')">אני</button>`
+    : "";
   const editCtx = "edit:" + section + ":" + id;
   const ai = section === "meals" ? aiSectionHtml(id) : "";
   const body = open ? `
@@ -607,6 +637,7 @@ function cardHtml(section, it) {
           ${s.meta ? `<div class="card-sub">${esc(s.meta)}</div>` : ""}
           ${it.createdBy ? `<div class="card-by">נוסף ע"י ${esc(it.createdBy)}</div>` : ""}
         </div>
+        ${claim}
         <span class="chev ${open ? "open" : ""}" onclick="actions.toggleCard('${section}','${id}')">${ICONS.chev}</span>
       </div>
       ${body}
@@ -651,6 +682,7 @@ function genericHtml(section) {
     <div class="empty">
       ${sec.empty}
       ${section === "personal" ? `<br><button class="fill-btn" onclick="actions.fillBasics()">✦ מלא רשימה בסיסית</button>` : ""}
+      ${section === "gear" ? `<br><button class="fill-btn" onclick="actions.fillGear()">✦ מלא רשימה בסיסית</button>` : ""}
     </div>`;
   return empty + cards + addCardHtml("add:" + section, section, ADD_WORD[section]);
 }
