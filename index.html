@@ -139,6 +139,15 @@
     background: var(--amber); color: #fff; font-weight: 600; font-size: 14px;
     padding: 8px 16px; border-radius: 12px;
   }
+  .fill-row { text-align: center; margin: 2px 0 8px; }
+  .fill-row .fill-btn { margin-top: 0; }
+  .seg { display: flex; gap: 6px; }
+  .seg-btn {
+    flex: 1; padding: 8px 10px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    background: #fff; color: #57604F; border: 1px solid #DDE0D2;
+  }
+  .seg-btn:active { transform: scale(.97); }
+  .seg-btn.active { background: var(--pine); color: #fff; border-color: var(--pine); box-shadow: 0 2px 8px rgba(30,58,47,.3); }
   .claim {
     flex-shrink: 0; font-size: 13px; font-weight: 700;
     padding: 6px 12px; border-radius: 10px;
@@ -232,7 +241,7 @@ const SECTIONS = [
   { key: "meals",    label: "ארוחות",    icon: "utensils",
     empty: "תכננו ארוחה לכל מועד — מה אוכלים ומי אחראי להכין." },
   { key: "shopping", label: "קניות",     icon: "cart",
-    empty: "רשימת הקניות המשותפת. סימון ✓ = כבר נקנה." },
+    empty: "רשימת הקניות. סימון ✓ = כבר נקנה." },
   { key: "gear",     label: "ציוד",      icon: "tent",
     empty: "מי מביא מה." },
   { key: "personal", label: "ציוד אישי", icon: "backpack",
@@ -250,7 +259,7 @@ const QUOTE_NOTES_FIELD = { k: "notes", ph: "מה עוד כולל / הערות",
 const SECTION_FIELDS = {
   people:    [ { k: "name", ph: "שם" }, { k: "role", ph: "אחראי על..." } ],
   meals:     [ { k: "title", ph: "שם הארוחה (שישי ערב...)" }, { k: "desc", ph: "מה אוכלים", type: "textarea" }, { k: "owner", ph: "אחראי", type: "owner" } ],
-  shopping:  [ { k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות", type: "num" }, { k: "owner", ph: "מי מביא", type: "owner" } ],
+  shopping:  [ { k: "item", ph: "מצרך" }, { k: "qty", ph: "כמות" }, { k: "price", ph: "מחיר (₪)", type: "num", input: "number" } ],
   gear:      [ { k: "item", ph: "פריט" }, { k: "owner", ph: "מי מביא", type: "owner" } ],
   personal:  [ { k: "item", ph: "פריט" } ],
   guests:    [ { k: "name", ph: "שם האורח" }, { k: "arrival", ph: "מתי מגיע (יום/שעה)" } ],
@@ -278,6 +287,62 @@ const GEAR_ITEMS = [
 
 const BASIC_PERSONAL = ["שק שינה","מזרן שטח","פנס ראש","בקבוק מים","כובע","קרם הגנה","בגדים חמים לערב","בגד ים","נעליים סגורות","מטען נייד / סוללה","תרופות אישיות","מגבת"];
 const BASIC_GEAR = ["ראש גזייה","בלון גז","סיר","מחבת","כלי אכילה משותפים","קרש חיתוך + סכין","צידנית","צלייה + חבלים","תאורת קמפינג / פנסים","ערכת עזרה ראשונה","שולחן קמפינג","דלי / ג׳ריקן לניקוי"];
+/* רשימת קניות אחת: לקנות (buy) + אפשר מהבית (home). אין באקט "מהעסק" —
+   רשימה ישנה מעורבת נספרת כקנייה; פריט בלי bucket מוצג בלקנות. qty כטקסט, price ריק עד שממלאים. */
+const BASIC_SHOP_BUY = [
+  { item: "אנטריקוט", qty: "200 גרם" },
+  { item: "קבבים", qty: "12 יח׳" },
+  { item: "שיפודי פרגית", qty: "2" },
+  { item: "ביצים", qty: "7" },
+  { item: "פיתות" },
+  { item: "חלה / מצות" },
+  { item: "רסק עגבניות" },
+  { item: "קפה שחור" },
+  { item: "סוכר" },
+  { item: "תה" },
+  { item: "שמן זית" },
+  { item: "שמן קנולה" },
+  { item: "סחוג" },
+  { item: "גרגירים" },
+  { item: "טחינה" },
+  { item: "חומוס" },
+  { item: "מתוקים לבוקר" },
+  { item: "חטיפים (דוריטוס, ביסלי, קינדר בואנו, פתיבר)" },
+  { item: "גרעינים שחורים ממולחים" },
+  { item: "מלון" },
+  { item: "שזיפים" },
+  { item: "ענבים" },
+  { item: "פלפל חריף", qty: "3" },
+  { item: "עגבניות", qty: "7" },
+  { item: "מלפפון", qty: "5" },
+  { item: "פטרוזיליה" },
+  { item: "בצל" },
+  { item: "שום" },
+  { item: "לימון" },
+  { item: "אלכוהול" },
+  { item: "יין" },
+  { item: "מים 2 ל׳", qty: "3 שישיות" },
+  { item: "קרח (ביציאה)" },
+  { item: "אלתוש" },
+  { item: "גז בוטן 400ג (טכניק 2000)" },
+  { item: "שקיות זבל" },
+  { item: "קערות מתכלות" },
+  { item: "דלי מגבונים" },
+  { item: "כוסות שליש" },
+  { item: "קשים" },
+  { item: "מזלג וכף" },
+];
+const BASIC_SHOP_HOME = [
+  { item: "מלח" },
+  { item: "תבלינים" },
+  { item: "שום (אם יש בבית)" },
+  { item: "בצל (אם יש)" },
+  { item: "שמן (שאריות)" },
+  { item: "קפה / תה / סוכר (שאריות)" },
+  { item: "לימון (אם יש)" },
+  { item: "פטרוזיליה (אם יש)" },
+];
+const shopBucketOf = (it) => it?.bucket === "home" ? "home" : "buy";
 
 /* ---------- מילון גיבוי למצרכים (fallback ל-AI) ---------- */
 const MEAL_FALLBACK = [
@@ -316,6 +381,7 @@ let db = null;
 let appCheck = null;
 let state = { meta: {}, items: {}, guests: {}, quotes: {} };
 let tab = "people";
+let shopBucket = "buy"; // buy | home — תת־טאב בקניות
 let connected = "off"; // off | on | err
 const timers = {};
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -415,6 +481,12 @@ async function suggestIngredients(title, desc) {
 /* ---------- פעולות ---------- */
 window.actions = {
   setTab(k) { tab = k; render(); },
+  setShopBucket(k) {
+    shopBucket = k === "home" ? "home" : "buy";
+    addOpen.delete("add:shopping");
+    delete drafts["add:shopping"];
+    render();
+  },
   meta(field, el) { debounced("meta:" + field, () => wr("meta/" + field, el.value)); },
 
   /* זהות */
@@ -468,6 +540,7 @@ window.actions = {
     const item = { ts: Date.now(), createdBy: currentUser };
     fields.forEach((f) => { item[f.k] = d[f.k] || ""; });
     if (CHECK_SECTIONS.includes(section)) item.done = false;
+    if (section === "shopping") item.bucket = shopBucket;
     const path = section === "guests" ? ("guests/" + uid())
       : section === "quotes" ? ("quotes/" + uid())
       : ("items/" + section + "/" + uid());
@@ -535,6 +608,27 @@ window.actions = {
     BASIC_GEAR.forEach((t, i) => (batch[uid() + i] = { item: t, owner: "", ts: Date.now() + i, createdBy: currentUser }));
     up("items/gear", batch);
   },
+  /* מוסיף רק שמות חסרים לכל תת־רשימה — לא מוחק ולא דורס פריטים קיימים */
+  fillShopping() {
+    const have = { buy: new Set(), home: new Set() };
+    Object.values(state.items?.shopping || {}).forEach((it) => {
+      const name = (it.item || "").trim();
+      if (name) have[shopBucketOf(it)].add(name);
+    });
+    const batch = {};
+    const addMissing = (seeds, bucket, names) => {
+      seeds.forEach((s, i) => {
+        if (names.has(s.item)) return;
+        batch[uid() + i] = {
+          item: s.item, qty: s.qty || "", price: "", done: false,
+          ts: Date.now() + i, createdBy: currentUser, bucket,
+        };
+      });
+    };
+    addMissing(BASIC_SHOP_BUY, "buy", have.buy);
+    addMissing(BASIC_SHOP_HOME, "home", have.home);
+    if (Object.keys(batch).length) up("items/shopping", batch);
+  },
   claim(section, id) {
     if (!currentUser) return;
     const cur = getItem(section, id)?.owner;
@@ -562,7 +656,7 @@ window.actions = {
     const meal = state.items?.meals?.[mealId] || {};
     const batch = {};
     st.suggestions.filter((s) => s.checked).forEach((s, i) => {
-      batch[uid() + i] = { item: s.text, qty: "", owner: meal.owner || "", createdBy: currentUser, done: false, ts: Date.now() + i };
+      batch[uid() + i] = { item: s.text, qty: "", owner: meal.owner || "", createdBy: currentUser, done: false, ts: Date.now() + i, bucket: "buy" };
     });
     up("items/shopping", batch);
     delete aiState[mealId];
@@ -592,7 +686,10 @@ function formFieldsHtml(ctx, fields) {
     let control;
     if (f.type === "owner") control = ownerField(ctx, f.k, v);
     else if (f.type === "textarea") control = `<textarea class="finput ftext" placeholder="${esc(f.ph)}" data-fid="${ctx}:${f.k}" oninput="actions.draftInput('${ctx}','${f.k}',this)">${esc(v)}</textarea>`;
-    else control = `<input class="finput ${f.type === "num" ? "fnum" : ""}" placeholder="${esc(f.ph)}" value="${esc(v)}" data-fid="${ctx}:${f.k}" oninput="actions.draftInput('${ctx}','${f.k}',this)">`;
+    else {
+      const typeAttr = f.input === "number" ? `type="number" inputmode="decimal" min="0" step="any"` : "";
+      control = `<input class="finput ${f.type === "num" ? "fnum" : ""}" ${typeAttr} placeholder="${esc(f.ph)}" value="${esc(v)}" data-fid="${ctx}:${f.k}" oninput="actions.draftInput('${ctx}','${f.k}',this)">`;
+    }
     return `<div class="flabel">${esc(f.ph)}</div>${control}`;
   }).join("");
 }
@@ -600,7 +697,7 @@ function formFieldsHtml(ctx, fields) {
 function summary(section, it) {
   if (section === "people")   return { title: it.name || "(ללא שם)", meta: it.role || "" };
   if (section === "meals")    return { title: it.title || "(ללא שם)", meta: it.desc || "" };
-  if (section === "shopping") return { title: it.item || "(פריט)", meta: [it.qty ? "כמות: " + it.qty : "", it.owner ? "· " + it.owner : ""].filter(Boolean).join(" ") };
+  if (section === "shopping") return { title: it.item || "(פריט)", meta: [it.qty || "", it.price ? "₪" + it.price : ""].filter(Boolean).join(" · ") };
   if (section === "gear")     return { title: it.item || "(פריט)", meta: it.owner || "" };
   if (section === "personal") return { title: it.item || "(פריט)", meta: "" };
   if (section === "guests")   return { title: it.name || "(אורח)", meta: it.arrival || "" };
@@ -635,7 +732,7 @@ function cardHtml(section, it) {
         <div class="card-main" onclick="actions.toggleCard('${section}','${id}')">
           <div class="card-title">${esc(s.title)}</div>
           ${s.meta ? `<div class="card-sub">${esc(s.meta)}</div>` : ""}
-          ${it.createdBy ? `<div class="card-by">נוסף ע"י ${esc(it.createdBy)}</div>` : ""}
+          ${it.createdBy && section !== "shopping" ? `<div class="card-by">נוסף ע"י ${esc(it.createdBy)}</div>` : ""}
         </div>
         ${claim}
         <span class="chev ${open ? "open" : ""}" onclick="actions.toggleCard('${section}','${id}')">${ICONS.chev}</span>
@@ -685,6 +782,21 @@ function genericHtml(section) {
       ${section === "gear" ? `<br><button class="fill-btn" onclick="actions.fillGear()">✦ מלא רשימה בסיסית</button>` : ""}
     </div>`;
   return empty + cards + addCardHtml("add:" + section, section, ADD_WORD[section]);
+}
+
+function shoppingHtml() {
+  const items = entriesSorted(state.items?.shopping).filter((it) => shopBucketOf(it) === shopBucket);
+  const emptyMsg = shopBucket === "home" ? "עוד אין פריטים מהבית." : "עוד אין מה לקנות.";
+  const empty = items.length ? "" : `<div class="empty">${emptyMsg}</div>`;
+  const cards = items.map((it) => cardHtml("shopping", it)).join("");
+  return `
+    <div class="seg">
+      <button class="seg-btn ${shopBucket === "buy" ? "active" : ""}" onclick="actions.setShopBucket('buy')">לקנות</button>
+      <button class="seg-btn ${shopBucket === "home" ? "active" : ""}" onclick="actions.setShopBucket('home')">אפשר מהבית</button>
+    </div>
+    <div class="fill-row"><button class="fill-btn" onclick="actions.fillShopping()">✦ מלא רשימה</button></div>
+    ${empty}${cards}
+    ${addCardHtml("add:shopping", "shopping", ADD_WORD.shopping)}`;
 }
 
 function peopleHtml() {
@@ -817,6 +929,7 @@ function render() {
   let bodyHtml;
   if (tab === "quotes") bodyHtml = quotesHtml();
   else if (tab === "people") bodyHtml = peopleHtml();
+  else if (tab === "shopping") bodyHtml = shoppingHtml();
   else bodyHtml = genericHtml(tab);
 
   app.innerHTML = `
