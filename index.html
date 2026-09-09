@@ -290,58 +290,93 @@ const BASIC_GEAR = ["ראש גזייה","בלון גז","סיר","מחבת","כ�
 /* רשימת קניות אחת: לקנות (buy) + אפשר מהבית (home). אין באקט "מהעסק" —
    רשימה ישנה מעורבת נספרת כקנייה; פריט בלי bucket מוצג בלקנות. qty כטקסט, price ריק עד שממלאים. */
 const BASIC_SHOP_BUY = [
-  { item: "אנטריקוט", qty: "200 גרם" },
-  { item: "קבבים", qty: "12 יח׳" },
-  { item: "שיפודי פרגית", qty: "2" },
-  { item: "ביצים", qty: "7" },
-  { item: "פיתות" },
-  { item: "חלה / מצות" },
-  { item: "רסק עגבניות" },
-  { item: "קפה שחור" },
-  { item: "סוכר" },
-  { item: "תה" },
-  { item: "שמן זית" },
-  { item: "שמן קנולה" },
-  { item: "סחוג" },
-  { item: "גרגירים" },
+  { item: "כוס גרייגוס" },
+  { item: "מלקחיים + מזלג לבצל + תרבד" },
+  { item: "בוצ׳ר להגשה + קרש חיתוך גדול + סכין חד" },
+  { item: "בקבוקים למים" },
+  { item: "תבלינים" },
+  { item: "דלי מגבונים + גליל נייר תעשייתי + סטנד" },
+  { item: "גלגל ים ומזרוני ים + משאבה/מנפחה" },
+  { item: "סבון (סקוויזר) ופיילה לניקוי כלים" },
+  { item: "אוהל" },
+  { item: "רמקול גדול (ג׳באל)" },
+  { item: "תיק אישי + ציוד אישי" },
+  { item: "מזרון מתנפח / שטח" },
+  { item: "צילייה" },
+  { item: "שולחנות + כיסאות + ספות" },
+  { item: "נייר כסף" },
+  { item: "תבניות כסף" },
+  { item: "צידנית אחסון מהעסק האפורה" },
+  { item: "גחלים" },
+  { item: "אדוויל" },
+  { item: "קולה", qty: "שישייה" },
+  { item: "סלט כרוב אדום" },
+  { item: "סלט כרוב לבן" },
+  { item: "סוללות" },
+  { item: "לימון" },
+  { item: "שום" },
+  { item: "בצל" },
+  { item: "מלפפון", qty: "5" },
+  { item: "עגבניות", qty: "7" },
+  { item: "פלפל חריף", qty: "3" },
+  { item: "חצילים" },
+  { item: "כוסות שליש" },
   { item: "טחינה" },
   { item: "חומוס" },
-  { item: "מתוקים לבוקר" },
-  { item: "חטיפים (דוריטוס, ביסלי, קינדר בואנו, פתיבר)" },
-  { item: "גרעינים שחורים ממולחים" },
-  { item: "מלון" },
-  { item: "שזיפים" },
-  { item: "ענבים" },
-  { item: "פלפל חריף", qty: "3" },
-  { item: "עגבניות", qty: "7" },
-  { item: "מלפפון", qty: "5" },
-  { item: "פטרוזיליה" },
-  { item: "בצל" },
-  { item: "שום" },
-  { item: "לימון" },
-  { item: "אלכוהול" },
-  { item: "יין" },
-  { item: "מים 2 ל׳", qty: "3 שישיות" },
-  { item: "קרח (ביציאה)" },
-  { item: "אלתוש" },
-  { item: "גז בוטן 400ג (טכניק 2000)" },
-  { item: "שקיות זבל" },
-  { item: "קערות מתכלות" },
-  { item: "דלי מגבונים" },
-  { item: "כוסות שליש" },
-  { item: "קשים" },
   { item: "מזלג וכף" },
+  { item: "קשים" },
+  { item: "שקיות זבל" },
+  { item: "מלון, שזיפים, ענבים" },
+  { item: "ביצים", qty: "7" },
+  { item: "מים 2 ל׳", qty: "3 שישיות" },
+  { item: "גרעינים שחורים ממולחים" },
+  { item: "שיפודי פרגית", qty: "2" },
+  { item: "קבבים", qty: "12 יח׳" },
+  { item: "אנטריקוט", qty: "200 גרם" },
+  { item: "חלה / מצות" },
+  { item: "אלתוש" },
+  { item: "קרח (ביציאה לטיול)" },
+  { item: "שמן זית + קנולה" },
+  { item: "קפה שחור + סוכר + תה" },
+  { item: "רסק עגבניות" },
+  { item: "חטיפים (דוריטוס, ביסלי, קינדר בואנו, פתיבר סנדוויץ שוקולד)" },
+  { item: "אלכוהול" },
+  { item: "מתוקים לבוקר" },
+  { item: "כלים רב פעמיים מהעסק" },
+  { item: "שולחן מתקפל גדול וקטן" },
+  { item: "מטען נייד + מטענים + כבלים" },
+  { item: "כפכפים" },
+  { item: "משקפי שמש" },
+  { item: "כף עץ" },
+  { item: "שש-בש" },
+  { item: "מיקאסה" },
+  { item: "לדרמן" },
+  { item: "ערכת קפה" },
+  { item: "שמפניירה" },
+  { item: "גז לכירה ולבלון" },
+  { item: "כירת גז" },
+  { item: "כוסות חמות" },
+  { item: "מחבת" },
+  { item: "סיר שקשוקה" },
+  { item: "מיץ גת" },
+  { item: "צידנית" },
+  { item: "אותנטיק" },
+  { item: "נפנף" },
+  { item: "מנגל" },
+  { item: "נייר טואלט + מגבונים" },
+  { item: "מברשת שיניים + משחה" },
+  { item: "כובע" },
+  { item: "בגד ים" },
+  { item: "בגדים להחלפה" },
+  { item: "היגיינה (דאודורנט, שמפו קטן, ארון ימין)" },
+  { item: "כריות / סדינים" },
+  { item: "קלפים" },
+  { item: "קרם הגנה" },
+  { item: "תאורה" },
+  { item: "מחצלות" },
 ];
-const BASIC_SHOP_HOME = [
-  { item: "מלח" },
-  { item: "תבלינים" },
-  { item: "שום (אם יש בבית)" },
-  { item: "בצל (אם יש)" },
-  { item: "שמן (שאריות)" },
-  { item: "קפה / תה / סוכר (שאריות)" },
-  { item: "לימון (אם יש)" },
-  { item: "פטרוזיליה (אם יש)" },
-];
+const BASIC_SHOP_HOME = [];
+const SHOP_SEED_V = 2; // העלאה = איפוס רשימת הקניות וזריעה מחדש לכולם
 const shopBucketOf = (it) => it?.bucket === "home" ? "home" : "buy";
 
 /* ---------- מילון גיבוי למצרכים (fallback ל-AI) ---------- */
@@ -415,6 +450,7 @@ if (!configMissing) {
       state.quotes = state.quotes || {};
       connected = "on";
       render();
+      if (state.meta.shopSeed !== SHOP_SEED_V) { state.meta.shopSeed = SHOP_SEED_V; actions.resetShopping(); }
     }, () => { connected = "err"; render(); });
   } catch (e) {
     connected = "err";
@@ -608,6 +644,17 @@ window.actions = {
     BASIC_GEAR.forEach((t, i) => (batch[uid() + i] = { item: t, owner: "", ts: Date.now() + i, createdBy: currentUser }));
     up("items/gear", batch);
   },
+  resetShopping() {
+    const batch = {};
+    BASIC_SHOP_BUY.forEach((x, i) => (batch[uid() + i] = { item: x.item, qty: x.qty || "", price: "", done: false, ts: Date.now() + i, createdBy: currentUser, bucket: "buy" }));
+    wr("items/shopping", batch);
+    up("meta", { shopSeed: SHOP_SEED_V });
+  },
+  moveShop(id, bucket) {
+    up("items/shopping/" + id, { bucket });
+    openCards.delete("shopping:" + id);
+    render();
+  },
   /* מוסיף רק שמות חסרים לכל תת־רשימה — לא מוחק ולא דורס פריטים קיימים */
   fillShopping() {
     const have = { buy: new Set(), home: new Set() };
@@ -720,6 +767,7 @@ function cardHtml(section, it) {
     <div class="card-body">
       ${formFieldsHtml(editCtx, SECTION_FIELDS[section])}
       ${ai}
+      ${section === "shopping" ? `<button class="btn-ai" onclick="actions.moveShop('${id}','${shopBucketOf(it) === "home" ? "buy" : "home"}')">${shopBucketOf(it) === "home" ? "⇠ העבר ל״לקנות״" : "⇢ העבר ל״אפשר מהבית״"}</button>` : ""}
       <div class="form-actions">
         <button class="btn-del" onclick="actions.del('${section}','${id}')">${ICONS.trash} מחק</button>
         <button class="btn-save" onclick="actions.saveEdit('${section}','${id}')">שמור</button>
